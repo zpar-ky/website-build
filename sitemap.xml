@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+  xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  
+  <url>
+    <loc>https://sparky.works/projects/</loc>
+    <lastmod>2018-07-16T22:17:19-04:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://sparky.works/posts/test/</loc>
+    <lastmod>2018-07-16T14:39:04-04:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://sparky.works/posts/</loc>
+    <lastmod>2018-07-16T12:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://sparky.works/about/</loc>
+  </url>
+  
+  <url>
+    <loc>https://sparky.works/tags/blog/</loc>
+    <lastmod>2018-07-16T14:39:04-04:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>https://sparky.works/categories/</loc>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>https://sparky.works/</loc>
+    <lastmod>2018-07-16T22:17:19-04:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>https://sparky.works/tags/story/</loc>
+    <lastmod>2018-07-16T14:39:04-04:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>https://sparky.works/tags/</loc>
+    <lastmod>2018-07-16T14:39:04-04:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+</urlset>
