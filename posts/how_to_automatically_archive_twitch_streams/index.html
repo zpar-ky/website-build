@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en-US">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="MobileOptimized" content="320">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="referrer" content="no-referrer">
+    
+    <meta name="description" content="The personal blog of Andrew Novak.">
+    
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:domain" content="https://sparky.works/">
+    
+    <meta name="twitter:image" content="https://sparky.works/card.png">
+    <meta name="twitter:title" property="og:title" itemprop="title name" content="I&#39;m Andrew!">
+    <meta name="twitter:description" property="og:description" itemprop="description" content="The personal blog of Andrew Novak.">
+    <meta name="og:type" content="website">
+    <meta name="og:url" content="https://sparky.works/">
+    <meta name="og:image" itemprop="image primaryImageOfPage" content="https://sparky.works/card.png">
+    
+    <title>How to Automatically Archive Twitch Streams - The Hard Way</title>
+    <link rel="shortcut icon" href="https://sparky.works/andrew.ico" id="favicon">
+    <link rel="stylesheet" href="https://sparky.works/css/style.css">
+    
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+        crossorigin="anonymous"></script>
+    
+    
+
+</head>
+
+</html>
+<body><div class="wrap"><div class="section" id="title">How to Automatically Archive Twitch Streams - The Hard Way</div><div class="section" id="content">Fri Jul 20, 2018 &#183; 1713 words
+
+<div class="tag-container"><span class="tag"><a href="https://sparky.works/tags/powershell">powershell</a></span><span class="tag"><a href="https://sparky.works/tags/archiving">archiving</a></span><span class="tag"><a href="https://sparky.works/tags/guide">guide</a></span></div><hr/>
+
+<p>If you&rsquo;re like me, simply downloading Twitch VODs aren&rsquo;t good enough. The major one for me is that VODs will have copyrighted content muted, so if the stream has a copyrighted song playing, an entire 5+ minute chunk of the video will be muted. You can get around this by streaming the stream to a local file with <a href="https://github.com/streamlink/streamlink">streamlink</a>.<br />
+Pretty simple, until you want it to not be. Let&rsquo;s make it difficult, with powershell scripting, timed scripts, and error handling!</p>
+
+<hr />
+
+<p>In this I&rsquo;ll be using <strong>PowerShell</strong>, because I&rsquo;m on Windows and scripting with it is pretty easy. However, there are a few nags that need to be addressed during the process, which I&rsquo;ll address later.</p>
+
+<h2 id="step-1-installing-the-necessary-stuff">Step 1: Installing the necessary stuff</h2>
+
+<h3 id="streamlink-cli">Streamlink CLI</h3>
+
+<p>We&rsquo;re going to use Streamlink in order to stream the Twitch stream directly to a file. Streamlink gives us a lot of options in the stream, such as desired quality.<br />
+If you don&rsquo;t already have Python installed, you can get the latest release <a href="https://www.python.org/downloads/">here</a>.<br />
+Pip is my preferred Python package installer, and you can install streamlink with <code>pip install streamlink</code>. Pip installs all the necessary dependencies as well, which is nice.</p>
+
+<h3 id="ffmpeg">FFmpeg</h3>
+
+<p>I use FFmpeg here to copy the streamed file to a final mp4 container. This isn&rsquo;t really necessary, but I like to do it because the streamed file doesn&rsquo;t have the length in the windows file explorer and that bothers me. It also has the odd benefit of slightly reducing the file size (around 3% reduction in my observations). Not much of an impact (like 30GB saved over 1000GB), but hey.<br />
+Rambling aside (this is my blog, I&rsquo;m allowed to ramble, yeah?), installed ffmpeg is simple. Download the <a href="https://ffmpeg.zeranoe.com/builds/">binary zip</a>, and extract the <code>bin/ffmpeg.exe</code> file to your <code>C:\Windows\System32\</code>. This automatically adds it to your path, instead of having to extract it to some odd folder and adding it to path.</p>
+
+<h3 id="get-a-twitch-api-token">Get a Twitch API token</h3>
+
+<p>So this isn&rsquo;t technically anything you need to install, but you do need this to get Twitch data through API calls.<br />
+Go to <a href="https://dev.twitch.tv/dashboard">dev.twitch.tv/dashboard</a> and register a new app. You can name it whatever you want, with any category, it doesn&rsquo;t really matter. All you care about is the client ID, which is what you use to authenticate basic usage of the Twitch API.</p>
+
+<h2 id="step-2-getting-data-from-twitch">Step 2: Getting data from Twitch</h2>
+
+<p>When saving the file, we can name it however we want. However, for my use, I want to name it based on the day (20180720), the time of the stream (AM or PM), and the game (Hitman). The first two can be found from built-in PowerShell commands, but the game we can pull from Twitch APIs.</p>
+
+<p>While getting the game from Twitch is cool and all, what I <em>actually</em> want is to see if the channel is live, keep checking <em>until</em> they are live, and then get the game they&rsquo;re playing and start downloading the stream.<br />
+<strong>Channel ID</strong>: Twitch APIs use channel IDs instead of the channel name (login name), however there isn&rsquo;t an easy way to get this&hellip; unless you use wonderful APIs!</p>
+
+<p>Let&rsquo;s begin making our PowerShell script:</p>
+<div class="highlight"><pre style="color:#fff;background-color:#111;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-PowerShell" data-lang="PowerShell"><span style="color:#fb660a">$CLIENTID</span>=<span style="color:#0086d2">&#34;13ll40uu06spkju4haat5eeqcpsp61&#34;</span> <span style="color:#080;background-color:#0f140f;font-style:italic"># Client ID from Twitch Dev</span>
+<span style="color:#fb660a">$STREAMID</span>=<span style="color:#0086d2">&#34;&#34;</span> <span style="color:#080;background-color:#0f140f;font-style:italic"># Leave blank if you don&#39;t know it, or fill it in</span>
+<span style="color:#fb660a">$LOGINNAME</span>=<span style="color:#0086d2">&#34;moonmoon_ow&#34;</span> <span style="color:#080;background-color:#0f140f;font-style:italic"># Login of the user you want to get data on (can be left blank if streamid is filled in)</span></code></pre></div>
+<p>Now, if we don&rsquo;t know the stream ID, we can get that with a simple curl API call</p>
+<div class="highlight"><pre style="color:#fff;background-color:#111;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-PowerShell" data-lang="PowerShell"><span style="color:#fb660a;font-weight:bold">if</span> (<span style="color:#fb660a">$STREAMID</span>.Length.Equals(0)) {
+<span style="color:#fb660a">$STREAMID</span>=curl -s -H <span style="color:#0086d2">&#34;Accept: application/vnd.twitchtv.v5+json&#34;</span> \ -H <span style="color:#0086d2">&#34;Client-ID: $CLIENTID&#34;</span> \ -X GET <span style="color:#0086d2">&#34;https://api.twitch.tv/kraken/users?login=$LOGINNAME&#34;</span>
+<span style="color:#fb660a">$STREAMID</span>=<span style="color:#fb660a">$STREAMID</span> -replace <span style="color:#0086d2">&#34;^.*id\</span><span style="color:#0086d2">`&#34;</span><span style="color:#0086d2">:\</span><span style="color:#0086d2">`&#34;</span><span style="color:#0086d2">&#34;</span>,<span style="color:#0086d2">&#34;&#34;</span>
+<span style="color:#fb660a">$STREAMID</span>=<span style="color:#fb660a">$STREAMID</span> -replace <span style="color:#0086d2">&#34;\</span><span style="color:#0086d2">`&#34;</span><span style="color:#0086d2">,\</span><span style="color:#0086d2">`&#34;</span><span style="color:#0086d2">name\</span><span style="color:#0086d2">`&#34;</span><span style="color:#0086d2">.*$&#34;</span>,<span style="color:#0086d2">&#34;&#34;</span>
+}</code></pre></div>
+<p>This only runs if the STREAMID variable is blank. All the -replace text that looks like actual garbage is regex, and because the api returns a json string, we have to sift through what&rsquo;s given to get what we want (the stream ID).<br />
+Here&rsquo;s what the curl returns before formatting:</p>
+
+<pre><code>{&quot;_total&quot;:1,&quot;users&quot;:[{&quot;display_name&quot;:&quot;MOONMOON_OW&quot;,&quot;_id&quot;:&quot;121059319&quot;,&quot;name&quot;:&quot;moonmoon_ow&quot;,&quot;type&quot;:&quot;user&quot;,&quot;bio&quot;:&quot;hi i am a video gamer i play the video games | twitter.com/moonmoon_ow&quot;,&quot;created_at&quot;:&quot;2016-04-06T04:12:40.993797Z&quot;,&quot;updated_at&quot;:&quot;2018-07-20T13:02:14.113217Z&quot;,&quot;logo&quot;:&quot;picture url i cut off&quot;}]}
+</code></pre>
+
+<p>The first -replace takes the parameters <code>&quot;^.*id\`&quot;:\`&quot;&quot;,&quot;&quot;</code>, which can be broken down into several pieces of regex.</p>
+
+<ul>
+<li><code>^.</code> - start from beginning of line <code>^</code> and match any character <code>.</code></li>
+<li><code>*id</code> - keep matching any character until we hit the string <code>id</code>
+
+<ul>
+<li>The following <code>\`&quot;:\`&quot;</code> is simply keep matching for a <code>&quot;:&quot;</code>, but because PowerShell uses double quotes to know where parameter values begin and end, they need to be <em>escaped</em> with a &lsquo;`&rsquo;.</li>
+</ul></li>
+<li>We now have everything up to id&rdquo;:&rdquo; selected, and replace it with <code>&quot;&quot;</code>, or blank, to delete it.</li>
+</ul>
+
+<p>The next -replace takes the parameters &ldquo;`&rdquo;,`&ldquo;name`&rdquo;.*$&ldquo;,&rdquo;&rdquo;</p>
+
+<ul>
+<li><code>\'&quot;,\'&quot;name\`&quot;</code> simplifies down to selecting &ldquo;,&ldquo;name&rdquo;</li>
+<li><code>.*$</code> selects all characters <code>.</code> and keeps going until hitting the end of the line <code>*$</code></li>
+<li>And finally is deleted, leaving only the stream ID for us to use.<br /></li>
+</ul>
+
+<p>This is what I meant when I said doing it the hard way. Still getting data btw, hang in there!</p>
+
+<h3 id="step-2-5-making-sure-the-channel-is-live-and-getting-the-game-name">Step 2.5: Making sure the channel is live, and getting the game name</h3>
+
+<p>To check if a channel is live, an API call can be made:</p>
+<div class="highlight"><pre style="color:#fff;background-color:#111;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-PowerShell" data-lang="PowerShell"><span style="color:#fb660a">$DATA</span>=curl -s -H <span style="color:#0086d2">&#34;Accept: application/vnd.twitchtv.v5+json&#34;</span> \ -H <span style="color:#0086d2">&#34;Client-ID: $CLIENTID&#34;</span> \ -X GET <span style="color:#0086d2">&#34;https://api.twitch.tv/kraken/streams/$STREAMID&#34;</span> </code></pre></div>
+<p>Which returns:</p>
+
+<pre><code>{&quot;stream&quot;:{&quot;_id&quot;:29559308352,&quot;game&quot;:&quot;Bloons TD 6&quot;,&quot;broadcast_platform&quot;:&quot;live&quot;,&quot;community_id&quot;:&quot;&quot;,&quot;community_ids&quot;:[],&quot;viewers&quot;:10368,&quot;video_height&quot;:900,&quot;average_fps&quot;:60,&quot;delay&quot;:0,&quot;created_at&quot;:&quot;2018-07-20T14:07:47Z&quot;,&quot;is_playlist&quot;:false,&quot;stream_type&quot;:&quot;live&quot;,&quot;preview&quot;:{&quot;small&quot;:&quot;https://static-cdn.jtvnw.net/previews-ttv/live_user_moonmoon_ow-80x45.jpg&quot;,&quot;medium&quot;:&quot;https://static-cdn.jtvnw.net/previews-ttv/live_user_moonmoon_ow-320x180.jpg&quot;,&quot;large&quot;:&quot;https://static-cdn.jtvnw.net/previews-ttv/live_user_moonmoon_ow-640x360.jpg&quot;,&quot;template&quot;:&quot;https://static-cdn.jtvnw.net/previews-ttv/live_user_moonmoon_ow-{width}x{height}.jpg&quot;},&quot;channel&quot;:{&quot;mature&quot;:true,&quot;status&quot;:&quot;NEW bloons :)&quot;,&quot;broadcaster_language&quot;:&quot;en&quot;,&quot;display_name&quot;:&quot;MOONMOON_OW&quot;,&quot;game&quot;:&quot;Bloons TD 6&quot;,&quot;language&quot;:&quot;en&quot;,&quot;_id&quot;:121059319,&quot;name&quot;:&quot;moonmoon_ow&quot;,&quot;created_at&quot;:&quot;2016-04-06T04:12:40.993797Z&quot;,&quot;updated_at&quot;:&quot;2018-07-20T18:01:32.044163Z&quot;,&quot;partner&quot;:true,&quot;logo&quot;:&quot;https://static-cdn.jtvnw.net/jtv_user_pictures/3973e918fe7cc8c8-profile_image-300x300.png&quot;,&quot;video_banner&quot;:&quot;https://static-cdn.jtvnw.net/jtv_user_pictures/moonmoon_ow-channel_offline_image-2b3302e20384eee8-1920x1080.png&quot;,&quot;profile_banner&quot;:&quot;https://static-cdn.jtvnw.net/jtv_user_pictures/moonmoon_ow-profile_banner-13fbfa1ba07bcd8a-480.png&quot;,&quot;profile_banner_background_color&quot;:&quot;#ffffff&quot;,&quot;url&quot;:&quot;https://www.twitch.tv/moonmoon_ow&quot;,&quot;views&quot;:37775223,&quot;followers&quot;:622895,&quot;broadcaster_type&quot;:&quot;&quot;,&quot;description&quot;:&quot;hi i am a video gamer i play the video games | twitter.com/moonmoon_ow&quot;,&quot;private_video&quot;:false,&quot;privacy_options_enabled&quot;:false}}}
+</code></pre>
+
+<p>And all we need is <code>&quot;game&quot;:&quot;Bloons TD 6&quot;</code> (but we can also use this curl to check if the channel is live).</p>
+
+<p>If the channel <em>is not</em> live, all that returns from the above API call is</p>
+
+<pre><code>{&quot;stream&quot;:null}
+</code></pre>
+
+<p>And since we don&rsquo;t want to get rate-limited by Twitch, if the channel is not live, sleep for 30 seconds before trying again</p>
+<div class="highlight"><pre style="color:#fff;background-color:#111;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-PowerShell" data-lang="PowerShell"><span style="color:#fb660a;font-weight:bold">if</span> (<span style="color:#fb660a">$DATA</span>.Contains(<span style="color:#0086d2">&#34;null&#34;</span>)) { echo <span style="color:#0086d2">&#34;Stream is not live, sleeping for 30s&#34;</span>; Sleep 30 }</code></pre></div>
+<p>I made this into a one-liner because it&rsquo;s essentially just for sleeping, with an extra echo output so the user knows whats going on.<br />
+Wrap the entire request and sleep function in a do-while <code>$DATA-Contains(&quot;null&quot;)</code> to keep looping through the curl request until the streamer is live.</p>
+
+<p>Here are the next two bits of replacin&rsquo; regex:</p>
+<div class="highlight"><pre style="color:#fff;background-color:#111;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-PowerShell" data-lang="PowerShell"><span style="color:#fb660a">$DATA</span>=<span style="color:#fb660a">$DATA</span> -replace <span style="color:#0086d2">&#34;,\</span><span style="color:#0086d2">`&#34;</span><span style="color:#0086d2">broadcast_platform\</span><span style="color:#0086d2">`&#34;</span><span style="color:#0086d2">.*$&#34;</span>,<span style="color:#0086d2">&#34;&#34;</span>
+<span style="color:#fb660a">$DATA</span>=<span style="color:#fb660a">$DATA</span> -replace <span style="color:#0086d2">&#34;^.*,\</span><span style="color:#0086d2">`&#34;</span><span style="color:#0086d2">game&#34;</span>,<span style="color:#0086d2">&#34;{</span><span style="color:#0086d2">`&#34;</span><span style="color:#0086d2">game&#34;</span>
+<span style="color:#fb660a">$DATA</span>=<span style="color:#fb660a">$DATA</span> + <span style="color:#0086d2">&#34;}&#34;</span></code></pre></div>
+<p>These are identical to the previous regex uses, and the only thing that changes is where I want the start and end line selection to stop and begin. It&rsquo;s important to note here that switching the first two commands around would result in wrong output, because there are two <code>game</code> instances in the data. By removing everything past the broadcast_platform, which is right after the first game, we guarentee the right data is selected. (Probably)
+I also add a <code>{</code> to the front, because without it the text wouldn&rsquo;t be proper JSON output, and our next step wouldn&rsquo;t work out very well.</p>
+
+<p>Finally, we can convert the JSON string into a PowerShell object, with</p>
+<div class="highlight"><pre style="color:#fff;background-color:#111;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-PowerShell" data-lang="PowerShell"><span style="color:#fb660a">$DATA</span>=<span style="color:#fb660a">$DATA</span> | ConvertFrom-Json</code></pre></div>
+<p>Which allows us to select the game with</p>
+<div class="highlight"><pre style="color:#fff;background-color:#111;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-PowerShell" data-lang="PowerShell"><span style="color:#fb660a">$GAME</span>=<span style="color:#fb660a">$DATA</span>.game -replace <span style="color:#0086d2">&#34; &#34;</span>,<span style="color:#0086d2">&#34;_&#34;</span></code></pre></div>
+<p>(And also replace the spaces with _, which is entirely optional and only changes how the files are named)</p>
+
+<h2 id="step-3-what-are-we-working-on-again">Step 3: What are we working on, again?</h2>
+
+<p>All this for the name of the channels game. Now that we have what we need for the file naming, we can actually get around to downloading, storing, and scheduling.</p>
+
+<h3 id="step-3-33-downloading">Step 3.33: Downloading</h3>
+
+<p>The filenames can (and should) be <em>what you want</em>. This is based on my <strong>extremely</strong> specific use case. I&rsquo;m naming my files based on the date, time, and game (which we went through all that trouble to get programatically).</p>
+<div class="highlight"><pre style="color:#fff;background-color:#111;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-PowerShell" data-lang="PowerShell"><span style="color:#fb660a">$FILE</span>=(Get-Date -UFormat <span style="color:#0086d2">&#34;%Y%m%d_%p&#34;</span>) + <span style="color:#fb660a">$GAME</span> + <span style="color:#0086d2">&#34;.mp4&#34;</span>
+<span style="color:#fb660a">$FILETEMP</span>=<span style="color:#fb660a">$FILE</span> + <span style="color:#0086d2">&#34;_t.mp4&#34;</span></code></pre></div>
+<p>If you want to use different time formats (e.g. <code>%Y%m%d_%p</code> turns into <code>20170720_PM</code>), consult <a href="https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.utility/get-date?view=powershell-6#notes">this list</a> for the UNIX time format codes.<br />
+The temp file name is for the ffmpeg encode, which has to copy the file into a new one for a bit. Don&rsquo;t worry, we&rsquo;ll change it back!</p>
+
+<h3 id="step-3-66-storing">Step 3.66: Storing</h3>
+
+<p>To store, we just have to go into the directory we want to save it in, start streaming the stream to a file, and once the stream is done, use ffmpeg to copy it for my inane reason (see preface).</p>
+
+<p>Use the basic <code>cd</code> to change into whatever directory you want (can even use variables).<br />
+Start <code>streamlink</code> with</p>
+<div class="highlight"><pre style="color:#fff;background-color:#111;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-PowerShell" data-lang="PowerShell">streamlink -o <span style="color:#fb660a">$FILE</span> twitch.tv/moonmoon_ow best</code></pre></div>
+<ul>
+<li><code>-o</code> - Output to file <code>$FILE</code></li>
+<li>After -o is the URL of the stream, followed by the desired <a href="https://streamlink.github.io/cli.html#cmdoption-arg-stream">quality</a>. <code>best</code> chooses the highest quality, <code>source</code> also works too and removes any ambiguity.</li>
+</ul>
+
+<p>Once the stream is over, encode it with ffmpeg</p>
+<div class="highlight"><pre style="color:#fff;background-color:#111;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-PowerShell" data-lang="PowerShell">ffmpeg -i <span style="color:#fb660a">$FILE</span> -c copy <span style="color:#fb660a">$FILETEMP</span></code></pre></div>
+<ul>
+<li><code>-i</code> Input file</li>
+<li><code>-c</code> Codec. Use the one from the source file with <code>copy</code></li>
+<li><code>$FILETEMP</code> the output, previously defined</li>
+</ul>
+
+<p><strong>And that&rsquo;s it!</strong> If you skipped all the way down here, that&rsquo;s fine. I wanted to document what I did, and what I was thinking for each step, as well as trying to give more understanding of what the code does.</p>
+
+<h3 id="step-3-99-scheduling">Step 3.99: Scheduling</h3>
+
+<p>If you want to run the script automatically based on time (or something more complicated), the Windows Task Scheduler is what I&rsquo;d use. All you have to do is set up some rules based on, say, the streamer&rsquo;s schedule, and have it run. For more detail, check out this <a href="https://community.spiceworks.com/how_to/17736-run-powershell-scripts-from-task-scheduler">spiceworks</a> article.</p>
+
+<h2 id="the-end-result">The end result</h2>
+<div class="highlight"><pre style="color:#fff;background-color:#111;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-PowerShell" data-lang="PowerShell"><span style="color:#fb660a">$CLIENTID</span>=<span style="color:#0086d2">&#34;&#34;</span>
+<span style="color:#fb660a">$STREAMID</span>=<span style="color:#0086d2">&#34;&#34;</span>
+<span style="color:#fb660a">$LOGINNAME</span>=<span style="color:#0086d2">&#34;moonmoon_ow&#34;</span>
+
+<span style="color:#fb660a;font-weight:bold">if</span> (<span style="color:#fb660a">$STREAMID</span>.Length.Equals(0)) {
+<span style="color:#fb660a">$STREAMID</span>=curl -s -H <span style="color:#0086d2">&#34;Accept: application/vnd.twitchtv.v5+json&#34;</span> \ -H <span style="color:#0086d2">&#34;Client-ID: $CLIENTID&#34;</span> \ -X GET <span style="color:#0086d2">&#34;https://api.twitch.tv/kraken/users?login=$LOGINNAME&#34;</span>
+<span style="color:#fb660a">$STREAMID</span>=<span style="color:#fb660a">$STREAMID</span> -replace <span style="color:#0086d2">&#34;^.*id\</span><span style="color:#0086d2">`&#34;</span><span style="color:#0086d2">:\</span><span style="color:#0086d2">`&#34;</span><span style="color:#0086d2">&#34;</span>,<span style="color:#0086d2">&#34;&#34;</span>
+<span style="color:#fb660a">$STREAMID</span>=<span style="color:#fb660a">$STREAMID</span> -replace <span style="color:#0086d2">&#34;\</span><span style="color:#0086d2">`&#34;</span><span style="color:#0086d2">,\</span><span style="color:#0086d2">`&#34;</span><span style="color:#0086d2">name\</span><span style="color:#0086d2">`&#34;</span><span style="color:#0086d2">.*$&#34;</span>,<span style="color:#0086d2">&#34;&#34;</span>
+}
+
+<span style="color:#fb660a;font-weight:bold">Do</span> {
+
+<span style="color:#fb660a">$DATA</span>=curl -s -H <span style="color:#0086d2">&#34;Accept: application/vnd.twitchtv.v5+json&#34;</span> \ -H <span style="color:#0086d2">&#34;Client-ID: $CLIENTID&#34;</span> \ -X GET <span style="color:#0086d2">&#34;https://api.twitch.tv/kraken/streams/$STREAMID&#34;</span> 
+<span style="color:#080;background-color:#0f140f;font-style:italic"># Get json data on current stream. If offline, result is a null json.</span>
+<span style="color:#080;background-color:#0f140f;font-style:italic"># GET ends with the streamers client ID</span>
+
+<span style="color:#fb660a;font-weight:bold">if</span> (<span style="color:#fb660a">$DATA</span>.Contains(<span style="color:#0086d2">&#34;null&#34;</span>)) { echo <span style="color:#0086d2">&#34;Stream is not live, sleeping for 30s&#34;</span>; Sleep 30 }
+
+} <span style="color:#fb660a;font-weight:bold">While</span> (<span style="color:#fb660a">$DATA</span>.Contains(<span style="color:#0086d2">&#34;null&#34;</span>))
+
+<span style="color:#fb660a">$DATA</span>=<span style="color:#fb660a">$DATA</span> -replace <span style="color:#0086d2">&#34;,\</span><span style="color:#0086d2">`&#34;</span><span style="color:#0086d2">broadcast_platform\</span><span style="color:#0086d2">`&#34;</span><span style="color:#0086d2">.*$&#34;</span>,<span style="color:#0086d2">&#34;&#34;</span>
+<span style="color:#080;background-color:#0f140f;font-style:italic"># Delete everything after (and including) the broadcast_platform. Only thing we&#39;re interested in is if they&#39;re live and what game they&#39;re playing</span>
+<span style="color:#fb660a">$DATA</span>=<span style="color:#fb660a">$DATA</span> -replace <span style="color:#0086d2">&#34;^.*,\</span><span style="color:#0086d2">`&#34;</span><span style="color:#0086d2">game&#34;</span>,<span style="color:#0086d2">&#34;{</span><span style="color:#0086d2">`&#34;</span><span style="color:#0086d2">game&#34;</span>
+<span style="color:#080;background-color:#0f140f;font-style:italic"># Remove some prefix data so it&#39;s just the game name and live status</span>
+
+<span style="color:#fb660a">$DATA</span>=<span style="color:#fb660a">$DATA</span> + <span style="color:#0086d2">&#34;}&#34;</span>
+<span style="color:#fb660a">$DATA</span>=<span style="color:#fb660a">$DATA</span> | ConvertFrom-Json
+<span style="color:#080;background-color:#0f140f;font-style:italic"># Converts json output to PS object</span>
+
+<span style="color:#fb660a">$GAME</span>=<span style="color:#fb660a">$DATA</span>.game -replace <span style="color:#0086d2">&#34; &#34;</span>,<span style="color:#0086d2">&#34;_&#34;</span>
+
+<span style="color:#fb660a">$FILE</span>=(Get-Date -UFormat <span style="color:#0086d2">&#34;%Y%m%d_%p&#34;</span>) + <span style="color:#fb660a">$GAME</span> + <span style="color:#0086d2">&#34;.mp4&#34;</span>
+<span style="color:#fb660a">$FILETEMP</span>=<span style="color:#fb660a">$FILE</span> + <span style="color:#0086d2">&#34;_t.mp4&#34;</span>
+cd <span style="color:#0086d2">&#39;S:\Twitch Streams\moonmoon_ow\&#39;</span>
+
+
+streamlink -o <span style="color:#fb660a">$FILE</span> twitch.tv/moonmoon_ow best
+ffmpeg -i <span style="color:#fb660a">$FILE</span> -c copy <span style="color:#fb660a">$FILETEMP</span></code></pre></div>
+<p>View the up-to-date version on <a href="https://gist.github.com/sparkyman215/42b111cd266ea264fb41fb1058780bf5">GitHub</a></p>
+
+<p>Thanks for reading!</p>
+</div><div class="section bottom-menu"><hr/><p><a href="/posts">back</a>
+ &#183;
+
+
+
+<a href="/about">about</a>
+
+
+&#183; <a href="/posts">writing</a>
+&#183; <a href="/projects">projects</a>
+
+</p></div><div class="section footer">Created by Andrew Novak, with Hugo and the Sam theme.</div></div></body>
