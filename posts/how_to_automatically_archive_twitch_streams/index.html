@@ -33,7 +33,7 @@
 </head>
 
 </html>
-<body><div class="wrap"><div class="section" id="title">How to Automatically Archive Twitch Streams - The Hard Way</div><div class="section" id="content">Fri Jul 20, 2018 &#183; 1713 words
+<body><div class="wrap"><div class="section" id="title">How to Automatically Archive Twitch Streams - The Hard Way</div><div class="section" id="content">Fri Jul 20, 2018 &#183; 1781 words
 
 <div class="tag-container"><span class="tag"><a href="https://sparky.works/tags/powershell">powershell</a></span><span class="tag"><a href="https://sparky.works/tags/archiving">archiving</a></span><span class="tag"><a href="https://sparky.works/tags/guide">guide</a></span></div><hr/>
 
@@ -148,8 +148,9 @@ I also add a <code>{</code> to the front, because without it the text wouldn&rsq
 <h3 id="step-3-33-downloading">Step 3.33: Downloading</h3>
 
 <p>The filenames can (and should) be <em>what you want</em>. This is based on my <strong>extremely</strong> specific use case. I&rsquo;m naming my files based on the date, time, and game (which we went through all that trouble to get programatically).</p>
-<div class="highlight"><pre style="color:#fff;background-color:#111;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-PowerShell" data-lang="PowerShell"><span style="color:#fb660a">$FILE</span>=(Get-Date -UFormat <span style="color:#0086d2">&#34;%Y%m%d_%p&#34;</span>) + <span style="color:#fb660a">$GAME</span> + <span style="color:#0086d2">&#34;.mp4&#34;</span>
-<span style="color:#fb660a">$FILETEMP</span>=<span style="color:#fb660a">$FILE</span> + <span style="color:#0086d2">&#34;_t.mp4&#34;</span></code></pre></div>
+<div class="highlight"><pre style="color:#fff;background-color:#111;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-PowerShell" data-lang="PowerShell"><span style="color:#fb660a">$FILE</span>=(Get-Date -UFormat <span style="color:#0086d2">&#34;%Y%m%d_%p&#34;</span>) + <span style="color:#0086d2">&#34;_&#34;</span> + <span style="color:#fb660a">$GAME</span>
+<span style="color:#fb660a">$FILETEMP</span>=<span style="color:#fb660a">$FILE</span> + <span style="color:#0086d2">&#34;_t.mp4&#34;</span>
+<span style="color:#fb660a">$FILE</span>=<span style="color:#fb660a">$FILE</span> + <span style="color:#0086d2">&#34;.mp4&#34;</span></code></pre></div>
 <p>If you want to use different time formats (e.g. <code>%Y%m%d_%p</code> turns into <code>20170720_PM</code>), consult <a href="https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.utility/get-date?view=powershell-6#notes">this list</a> for the UNIX time format codes.<br />
 The temp file name is for the ffmpeg encode, which has to copy the file into a new one for a bit. Don&rsquo;t worry, we&rsquo;ll change it back!</p>
 
@@ -173,6 +174,9 @@ Start <code>streamlink</code> with</p>
 <li><code>$FILETEMP</code> the output, previously defined</li>
 </ul>
 
+<p>Then just change the temp filename to be the new filename (and delete the old one)</p>
+<div class="highlight"><pre style="color:#fff;background-color:#111;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-PowerShell" data-lang="PowerShell">rm <span style="color:#fb660a">$FILE</span>
+ren <span style="color:#fb660a">$FILETEMP</span> <span style="color:#fb660a">$FILE</span></code></pre></div>
 <p><strong>And that&rsquo;s it!</strong> If you skipped all the way down here, that&rsquo;s fine. I wanted to document what I did, and what I was thinking for each step, as well as trying to give more understanding of what the code does.</p>
 
 <h3 id="step-3-99-scheduling">Step 3.99: Scheduling</h3>
@@ -180,9 +184,11 @@ Start <code>streamlink</code> with</p>
 <p>If you want to run the script automatically based on time (or something more complicated), the Windows Task Scheduler is what I&rsquo;d use. All you have to do is set up some rules based on, say, the streamer&rsquo;s schedule, and have it run. For more detail, check out this <a href="https://community.spiceworks.com/how_to/17736-run-powershell-scripts-from-task-scheduler">spiceworks</a> article.</p>
 
 <h2 id="the-end-result">The end result</h2>
-<div class="highlight"><pre style="color:#fff;background-color:#111;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-PowerShell" data-lang="PowerShell"><span style="color:#fb660a">$CLIENTID</span>=<span style="color:#0086d2">&#34;&#34;</span>
-<span style="color:#fb660a">$STREAMID</span>=<span style="color:#0086d2">&#34;&#34;</span>
-<span style="color:#fb660a">$LOGINNAME</span>=<span style="color:#0086d2">&#34;moonmoon_ow&#34;</span>
+<div class="highlight"><pre style="color:#fff;background-color:#111;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-PowerShell" data-lang="PowerShell"><span style="color:#080;background-color:#0f140f;font-style:italic"># Required Variables</span>
+<span style="color:#fb660a">$CLIENTID</span>=<span style="color:#0086d2">&#34;&#34;</span> <span style="color:#080;background-color:#0f140f;font-style:italic"># Twitch API ID</span>
+<span style="color:#fb660a">$STREAMID</span>=<span style="color:#0086d2">&#34;&#34;</span> <span style="color:#080;background-color:#0f140f;font-style:italic"># Stream ID of the stream, can be left blank</span>
+<span style="color:#fb660a">$LOGINNAME</span>=<span style="color:#0086d2">&#34;&#34;</span> <span style="color:#080;background-color:#0f140f;font-style:italic"># Twitch URL of the stream you want to download</span>
+<span style="color:#fb660a">$DIR</span>=<span style="color:#0086d2">&#34;&#34;</span> <span style="color:#080;background-color:#0f140f;font-style:italic"># Base directory to save the files</span>
 
 <span style="color:#fb660a;font-weight:bold">if</span> (<span style="color:#fb660a">$STREAMID</span>.Length.Equals(0)) {
 <span style="color:#fb660a">$STREAMID</span>=curl -s -H <span style="color:#0086d2">&#34;Accept: application/vnd.twitchtv.v5+json&#34;</span> \ -H <span style="color:#0086d2">&#34;Client-ID: $CLIENTID&#34;</span> \ -X GET <span style="color:#0086d2">&#34;https://api.twitch.tv/kraken/users?login=$LOGINNAME&#34;</span>
@@ -209,15 +215,19 @@ Start <code>streamlink</code> with</p>
 <span style="color:#fb660a">$DATA</span>=<span style="color:#fb660a">$DATA</span> | ConvertFrom-Json
 <span style="color:#080;background-color:#0f140f;font-style:italic"># Converts json output to PS object</span>
 
+mkdir <span style="color:#0086d2">&#34;$DIR/</span>$(<span style="color:#fb660a">$DATA</span>.game)<span style="color:#0086d2">&#34;</span>
 <span style="color:#fb660a">$GAME</span>=<span style="color:#fb660a">$DATA</span>.game -replace <span style="color:#0086d2">&#34; &#34;</span>,<span style="color:#0086d2">&#34;_&#34;</span>
 
-<span style="color:#fb660a">$FILE</span>=(Get-Date -UFormat <span style="color:#0086d2">&#34;%Y%m%d_%p&#34;</span>) + <span style="color:#fb660a">$GAME</span> + <span style="color:#0086d2">&#34;.mp4&#34;</span>
+<span style="color:#fb660a">$FILE</span>=(Get-Date -UFormat <span style="color:#0086d2">&#34;%Y%m%d_%p&#34;</span>) + <span style="color:#0086d2">&#34;_&#34;</span> + <span style="color:#fb660a">$GAME</span>
 <span style="color:#fb660a">$FILETEMP</span>=<span style="color:#fb660a">$FILE</span> + <span style="color:#0086d2">&#34;_t.mp4&#34;</span>
-cd <span style="color:#0086d2">&#39;S:\Twitch Streams\moonmoon_ow\&#39;</span>
+<span style="color:#fb660a">$FILE</span>=<span style="color:#fb660a">$FILE</span> + <span style="color:#0086d2">&#34;.mp4&#34;</span>
+cd <span style="color:#0086d2">&#34;$DIR/$GAME&#34;</span>
 
 
-streamlink -o <span style="color:#fb660a">$FILE</span> twitch.tv/moonmoon_ow best
-ffmpeg -i <span style="color:#fb660a">$FILE</span> -c copy <span style="color:#fb660a">$FILETEMP</span></code></pre></div>
+streamlink -o <span style="color:#fb660a">$FILE</span> twitch.tv/<span style="color:#fb660a">$LOGINNAME</span> best
+ffmpeg -i <span style="color:#fb660a">$FILE</span> -c copy <span style="color:#fb660a">$FILETEMP</span>
+rm <span style="color:#fb660a">$FILE</span>
+ren <span style="color:#fb660a">$FILETEMP</span> <span style="color:#fb660a">$FILE</span></code></pre></div>
 <p>View the up-to-date version on <a href="https://gist.github.com/sparkyman215/1aa85bcf3e0b52d57e5e684d43e02d37">GitHub</a></p>
 
 <p>Thanks for reading!</p>
