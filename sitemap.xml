@@ -8,17 +8,15 @@
   </url>
   
   <url>
-    <loc>https://sparky.works/projects/</loc>
-    <lastmod>2018-07-16T22:17:19-04:00</lastmod>
+    <loc>https://sparky.works/</loc>
+    <lastmod>2018-07-20T12:15:50-04:00</lastmod>
+    <priority>0</priority>
   </url>
   
   <url>
-    <loc>https://sparky.works/posts/</loc>
-    <lastmod>2018-07-16T12:00:00+00:00</lastmod>
-  </url>
-  
-  <url>
-    <loc>https://sparky.works/about/</loc>
+    <loc>https://sparky.works/tags/</loc>
+    <lastmod>2018-07-20T12:15:50-04:00</lastmod>
+    <priority>0</priority>
   </url>
   
   <url>
@@ -28,18 +26,7 @@
   </url>
   
   <url>
-    <loc>https://sparky.works/categories/</loc>
-    <priority>0</priority>
-  </url>
-  
-  <url>
     <loc>https://sparky.works/tags/guide/</loc>
-    <lastmod>2018-07-20T12:15:50-04:00</lastmod>
-    <priority>0</priority>
-  </url>
-  
-  <url>
-    <loc>https://sparky.works/</loc>
     <lastmod>2018-07-20T12:15:50-04:00</lastmod>
     <priority>0</priority>
   </url>
@@ -57,8 +44,21 @@
   </url>
   
   <url>
-    <loc>https://sparky.works/tags/</loc>
-    <lastmod>2018-07-20T12:15:50-04:00</lastmod>
+    <loc>https://sparky.works/projects/</loc>
+    <lastmod>2018-07-16T22:17:19-04:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://sparky.works/posts/</loc>
+    <lastmod>2018-07-16T12:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://sparky.works/about/</loc>
+  </url>
+  
+  <url>
+    <loc>https://sparky.works/categories/</loc>
     <priority>0</priority>
   </url>
   
