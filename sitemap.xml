@@ -3,62 +3,62 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   
   <url>
-    <loc>https://sparky.works/posts/how_to_automatically_archive_twitch_streams/</loc>
+    <loc>https://zpar.ky/posts/how_to_automatically_archive_twitch_streams/</loc>
     <lastmod>2018-07-20T12:15:50-04:00</lastmod>
   </url>
   
   <url>
-    <loc>https://sparky.works/</loc>
-    <lastmod>2018-07-20T12:15:50-04:00</lastmod>
-    <priority>0</priority>
-  </url>
-  
-  <url>
-    <loc>https://sparky.works/tags/</loc>
+    <loc>https://zpar.ky/</loc>
     <lastmod>2018-07-20T12:15:50-04:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>https://sparky.works/tags/archiving/</loc>
+    <loc>https://zpar.ky/tags/</loc>
     <lastmod>2018-07-20T12:15:50-04:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>https://sparky.works/tags/guide/</loc>
+    <loc>https://zpar.ky/tags/archiving/</loc>
     <lastmod>2018-07-20T12:15:50-04:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>https://sparky.works/tags/powershell/</loc>
+    <loc>https://zpar.ky/tags/guide/</loc>
     <lastmod>2018-07-20T12:15:50-04:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>https://sparky.works/tags/scripting/</loc>
+    <loc>https://zpar.ky/tags/powershell/</loc>
     <lastmod>2018-07-20T12:15:50-04:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>https://sparky.works/projects/</loc>
+    <loc>https://zpar.ky/tags/scripting/</loc>
+    <lastmod>2018-07-20T12:15:50-04:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>https://zpar.ky/projects/</loc>
     <lastmod>2018-07-16T22:17:19-04:00</lastmod>
   </url>
   
   <url>
-    <loc>https://sparky.works/posts/</loc>
+    <loc>https://zpar.ky/posts/</loc>
     <lastmod>2018-07-16T12:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>https://sparky.works/about/</loc>
+    <loc>https://zpar.ky/about/</loc>
   </url>
   
   <url>
-    <loc>https://sparky.works/categories/</loc>
+    <loc>https://zpar.ky/categories/</loc>
     <priority>0</priority>
   </url>
   

@@ -2,48 +2,48 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Tags on I&#39;m Andrew!</title>
-    <link>https://sparky.works/tags/</link>
+    <link>https://zpar.ky/tags/</link>
     <description>Recent content in Tags on I&#39;m Andrew!</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <lastBuildDate>Fri, 20 Jul 2018 12:15:50 -0400</lastBuildDate>
     
-	<atom:link href="https://sparky.works/tags/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="https://zpar.ky/tags/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
       <title>archiving</title>
-      <link>https://sparky.works/tags/archiving/</link>
+      <link>https://zpar.ky/tags/archiving/</link>
       <pubDate>Fri, 20 Jul 2018 12:15:50 -0400</pubDate>
       
-      <guid>https://sparky.works/tags/archiving/</guid>
+      <guid>https://zpar.ky/tags/archiving/</guid>
       <description></description>
     </item>
     
     <item>
       <title>guide</title>
-      <link>https://sparky.works/tags/guide/</link>
+      <link>https://zpar.ky/tags/guide/</link>
       <pubDate>Fri, 20 Jul 2018 12:15:50 -0400</pubDate>
       
-      <guid>https://sparky.works/tags/guide/</guid>
+      <guid>https://zpar.ky/tags/guide/</guid>
       <description></description>
     </item>
     
     <item>
       <title>powershell</title>
-      <link>https://sparky.works/tags/powershell/</link>
+      <link>https://zpar.ky/tags/powershell/</link>
       <pubDate>Fri, 20 Jul 2018 12:15:50 -0400</pubDate>
       
-      <guid>https://sparky.works/tags/powershell/</guid>
+      <guid>https://zpar.ky/tags/powershell/</guid>
       <description></description>
     </item>
     
     <item>
       <title>scripting</title>
-      <link>https://sparky.works/tags/scripting/</link>
+      <link>https://zpar.ky/tags/scripting/</link>
       <pubDate>Fri, 20 Jul 2018 12:15:50 -0400</pubDate>
       
-      <guid>https://sparky.works/tags/scripting/</guid>
+      <guid>https://zpar.ky/tags/scripting/</guid>
       <description></description>
     </item>
     
