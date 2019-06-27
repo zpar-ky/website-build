@@ -12,6 +12,16 @@
     
     
     <item>
+      <title>How I Automate My Media Needs</title>
+      <link>https://zpar.ky/posts/how_i_automate_my_media_needs/</link>
+      <pubDate>Thu, 27 Jun 2019 12:49:22 -0500</pubDate>
+      
+      <guid>https://zpar.ky/posts/how_i_automate_my_media_needs/</guid>
+      <description>When I started archiving twitch streams, my data usage went up dramatically. As I had to both download and upload each stream, I was easily pushing 60 gigabytes a day. And that was just streaming. But that&amp;rsquo;s actually going to be another post, as my setup has gotten significantly more complex now that I&amp;rsquo;ve moved to a VPS.
+Anyway, I was essentially using almost two terabytes of data a month, split among stream archiving, general usage, and media ingesting.</description>
+    </item>
+    
+    <item>
       <title>How to Automatically Archive Twitch Streams - The Hard Way</title>
       <link>https://zpar.ky/posts/how_to_automatically_archive_twitch_streams/</link>
       <pubDate>Fri, 20 Jul 2018 12:15:50 -0400</pubDate>

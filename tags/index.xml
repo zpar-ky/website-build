@@ -6,10 +6,28 @@
     <description>Recent content in Tags on I&#39;m Andrew!</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Fri, 20 Jul 2018 12:15:50 -0400</lastBuildDate>
+    <lastBuildDate>Thu, 27 Jun 2019 12:49:22 -0500</lastBuildDate>
     
 	<atom:link href="https://zpar.ky/tags/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>media</title>
+      <link>https://zpar.ky/tags/media/</link>
+      <pubDate>Thu, 27 Jun 2019 12:49:22 -0500</pubDate>
+      
+      <guid>https://zpar.ky/tags/media/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>scripting</title>
+      <link>https://zpar.ky/tags/scripting/</link>
+      <pubDate>Thu, 27 Jun 2019 12:49:22 -0500</pubDate>
+      
+      <guid>https://zpar.ky/tags/scripting/</guid>
+      <description></description>
+    </item>
     
     <item>
       <title>archiving</title>
@@ -35,15 +53,6 @@
       <pubDate>Fri, 20 Jul 2018 12:15:50 -0400</pubDate>
       
       <guid>https://zpar.ky/tags/powershell/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>scripting</title>
-      <link>https://zpar.ky/tags/scripting/</link>
-      <pubDate>Fri, 20 Jul 2018 12:15:50 -0400</pubDate>
-      
-      <guid>https://zpar.ky/tags/scripting/</guid>
       <description></description>
     </item>
     
