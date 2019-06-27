@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>media on I&#39;m Andrew!</title>
+    <link>https://zpar.ky/tags/media/</link>
+    <description>Recent content in media on I&#39;m Andrew!</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Thu, 27 Jun 2019 12:49:22 -0500</lastBuildDate>
+    
+	<atom:link href="https://zpar.ky/tags/media/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>How I Automate My Media Needs</title>
+      <link>https://zpar.ky/posts/how_i_automate_my_media_needs/</link>
+      <pubDate>Thu, 27 Jun 2019 12:49:22 -0500</pubDate>
+      
+      <guid>https://zpar.ky/posts/how_i_automate_my_media_needs/</guid>
+      <description>When I started archiving twitch streams, my data usage went up dramatically. As I had to both download and upload each stream, I was easily pushing 60 gigabytes a day. And that was just streaming. But that&amp;rsquo;s actually going to be another post, as my setup has gotten significantly more complex now that I&amp;rsquo;ve moved to a VPS.
+Anyway, I was essentially using almost two terabytes of data a month, split among stream archiving, general usage, and media ingesting.</description>
+    </item>
+    
+  </channel>
+</rss>
