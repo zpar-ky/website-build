@@ -33,182 +33,118 @@
 </head>
 
 </html>
-<body><div class="wrap"><div class="section" id="title">How I Automate My Media Needs</div><div class="section" id="content">Thu Jun 27, 2019 &#183; 3451 words
+<body><div class="wrap"><div class="section" id="title">How I Automate My Media Needs</div><div class="section" id="content">Thu Jun 27, 2019 &#183; 3450 words
 
-<div class="tag-container"><span class="tag"><a href="https://zpar.ky/tags/scripting">scripting</a></span><span class="tag"><a href="https://zpar.ky/tags/media">media</a></span></div><hr/>
-
-<p>When I started archiving twitch streams, my data usage went up dramatically. As I had to both download and upload each stream, I was easily pushing 60 gigabytes <em>a day</em>. And that was just streaming. But that&rsquo;s actually going to be another post, as my setup has gotten significantly more complex now that I&rsquo;ve moved to a VPS.<br />
+<div class="tag-container"><span class="tag"><a href="https://zpar.ky/tags/scripting">scripting</a></span><span class="tag"><a href="https://zpar.ky/tags/media">media</a></span></div><hr/><p>When I started archiving twitch streams, my data usage went up dramatically. As I had to both download and upload each stream, I was easily pushing 60 gigabytes <em>a day</em>. And that was just streaming. But that&rsquo;s actually going to be another post, as my setup has gotten significantly more complex now that I&rsquo;ve moved to a VPS.<br>
 Anyway, I was essentially using almost two terabytes of data a month, split among stream archiving, general usage, and media ingesting. And I&rsquo;m in the evil clutches of Comcast/Xfinity and have to use less than 1 terabyte a month or get billed something crazy like $10/50GB or $50/mo for unlimited data. Seeing as they already charge way too much, something had to be done to get under 1 terabyte a month.</p>
-
-<p>Even though stream archiving was a major data hog (my solution to that will be covered in another post <sup>[citation needed]</sup> ), my method of gathering TV shows and movies was also using data and in need of a serious overhaul anyway.<br />
+<p>Even though stream archiving was a major data hog (my solution to that will be covered in another post <!-- raw HTML omitted -->[citation needed]<!-- raw HTML omitted --> ), my method of gathering TV shows and movies was also using data and in need of a serious overhaul anyway.<br>
 In this post, I will be thoroughly covering my automated media setup, as well as sharing any scripts I may use.</p>
-
-<hr />
-
-<p>I used to manually search, download, and rename files into my local filesystem, and point Plex to that. But I don&rsquo;t have the redundancy of multiple hard drives in RAID which was worrying me, especially with 5+ year old hard drives. So I moved to Google Drive, with an Enterprise account. This gives me unlimited storage for an affordable price. But of course, I would have to upload to Drive first, which would double my usage.<br />
+<hr>
+<p>I used to manually search, download, and rename files into my local filesystem, and point Plex to that. But I don&rsquo;t have the redundancy of multiple hard drives in RAID which was worrying me, especially with 5+ year old hard drives. So I moved to Google Drive, with an Enterprise account. This gives me unlimited storage for an affordable price. But of course, I would have to upload to Drive first, which would double my usage.<br>
 So now I also rent a VPS from <a href="https://www.linode.com/?r=913df61149f8c81df9b249000d9b538dbda26126">Linode</a>, which has been a great experience so far. I&rsquo;ve even dealt with their customer service a bit to get my VPS migrated to another data center, and they were very helpful. Another bonus is that, while they have a (generous) data cap, they only count upload usage against the data cap, which is great. They also have affordable bulk storage volumes which I additionally use.</p>
-
 <p>Before you start installing stuff (assuming you&rsquo;re planning on using this as a guide (don&rsquo;t)), make sure whatever hardware you&rsquo;re using is properly secured and hardened against common attacks. Close ports, set up a firewall, force key-only SSH, install AV, etc. Securing your stuff is <em>really really important</em> as, for example, my Linode gets hundreds of SSH attempts every day. I&rsquo;d recommend changing your SSH port to reduce the noise on your logs, however, not everyone agrees, as <a href="https://security.stackexchange.com/a/32311">there are caveats</a>.</p>
-
 <p>Once you have your Fort Knox, you&rsquo;re good to go.</p>
-
-<h1 id="1-software">1 . Software</h1>
-
+<h1 id="1--software">1 . Software</h1>
 <p>I have a basic setup of <a href="https://github.com/Sonarr/Sonarr">Sonarr</a>, <a href="https://github.com/Radarr/Radarr">Radarr</a>, <a href="https://github.com/Jackett/Jackett">Jackett</a>, and <a href="https://deluge-torrent.org/">Deluge</a> running on the VPS. <a href="https://www.plex.tv/">Plex</a> and <a href="http://www.netdrive.net/">NetDrive</a> run locally on my computer to serve content.</p>
-
-<hr />
-
-<h2 id="1-1-sonarr-https-sonarr-tv-radarr-https-radarr-video">1.1 <a href="https://sonarr.tv/">Sonarr</a>/<a href="https://radarr.video/">Radarr</a></h2>
-
-<p>Both of these are similar (Radarr is a fork of Sonarr), and both have similar internals but serve a different purpose. Sonarr deals with TV shows, and Radarr deals with movies.<br />
+<hr>
+<h2 id="11-sonarrhttpssonarrtvradarrhttpsradarrvideo">1.1 <a href="https://sonarr.tv/">Sonarr</a>/<a href="https://radarr.video/">Radarr</a></h2>
+<p>Both of these are similar (Radarr is a fork of Sonarr), and both have similar internals but serve a different purpose. Sonarr deals with TV shows, and Radarr deals with movies.<br>
 These two packages include a front-end web interface, which allows me to add content I want downloaded, see what I have downloaded, and request missing content to be searched for.</p>
-
-<h2 id="1-2-deluge-https-deluge-torrent-org">1.2 <a href="https://deluge-torrent.org/">Deluge</a></h2>
-
-<p>Deluge is a BitTorrent client that downloads everything I request from Sonarr/Radarr. While it&rsquo;s not the client I normally use, I think it&rsquo;s the only client that supports headless Linux installs. It also has a lot of critical CLI commands that I use in scripts.<br />
+<h2 id="12-delugehttpsdeluge-torrentorg">1.2 <a href="https://deluge-torrent.org/">Deluge</a></h2>
+<p>Deluge is a BitTorrent client that downloads everything I request from Sonarr/Radarr. While it&rsquo;s not the client I normally use, I think it&rsquo;s the only client that supports headless Linux installs. It also has a lot of critical CLI commands that I use in scripts.<br>
 Deluge for Linux includes both the web interface package, as well as the daemon, which does basically everything.</p>
-
-<h2 id="1-3-jackett-https-github-com-jackett-jackett">1.3 <a href="https://github.com/Jackett/Jackett">Jackett</a></h2>
-
-<p>Jackett is responsible for searching multiple torrent websites for content I request and returning it back to Sonarr/Radarr.<br />
+<h2 id="13-jacketthttpsgithubcomjackettjackett">1.3 <a href="https://github.com/Jackett/Jackett">Jackett</a></h2>
+<p>Jackett is responsible for searching multiple torrent websites for content I request and returning it back to Sonarr/Radarr.<br>
 Jackett is fully supported on Linux</p>
-
-<h2 id="1-4-rclone-https-rclone-org">1.4 <a href="https://rclone.org/">Rclone</a></h2>
-
-<p>Rclone is an excellent program for syncing data to/from cloud providers. It is responsible for transferring finished downloads off the VPS&rsquo;s small drive to my Google Drive. Also, I have my Google Drive &lsquo;mounted&rsquo; on the VPS in order for Sonarr/Radarr to be able to know what content is already stored.<br />
+<h2 id="14-rclonehttpsrcloneorg">1.4 <a href="https://rclone.org/">Rclone</a></h2>
+<p>Rclone is an excellent program for syncing data to/from cloud providers. It is responsible for transferring finished downloads off the VPS&rsquo;s small drive to my Google Drive. Also, I have my Google Drive &lsquo;mounted&rsquo; on the VPS in order for Sonarr/Radarr to be able to know what content is already stored.<br>
 Rclone is fully supported on Linux</p>
-
-<h1 id="2-speaking-the-same-language">2 . Speaking the Same Language</h1>
-
-<p>Getting separate programs to talk to each other can be quite difficult. Thankfully, Sonarr/Radarr (hereinafter <em>Sonarr</em>) makes it easy to connect to Jackett and Deluge, and if everything is running on the same server it is pretty simple.<br />
+<h1 id="2--speaking-the-same-language">2 . Speaking the Same Language</h1>
+<p>Getting separate programs to talk to each other can be quite difficult. Thankfully, Sonarr/Radarr (hereinafter <em>Sonarr</em>) makes it easy to connect to Jackett and Deluge, and if everything is running on the same server it is pretty simple.<br>
 In this section, I&rsquo;ll be going over how to get everything connected to Sonarr, which manages what Deluge and Jackett need to be doing.</p>
-
-<hr />
-
-<h2 id="2-1-1-adding-trackers-jackett">2.1.1 Adding Trackers - Jackett</h2>
-
-<p>Sonarr needs the results of many torrent sites (indexer) when it is looking for a specific media, say, an episode of a show. By connecting to Jackett indexers, Sonarr can compare the different torrent files that contain the media and choose the best one based on your restrictions. For example, imagine one indexer with a 720p torrent with 10 seeders, and another indexer with a 1080p torrent with 2 seeders. If your quality profile specifies &gt;=720p, and the indexer settings are all &gt;=5 seeders, Sonarr will choose the 720p torrent and send it to Deluge.<br />
-So now that you understand how Sonarr and Jackett work together, let&rsquo;s add some indexers.<br />
+<hr>
+<h2 id="211-adding-trackers---jackett">2.1.1 Adding Trackers - Jackett</h2>
+<p>Sonarr needs the results of many torrent sites (indexer) when it is looking for a specific media, say, an episode of a show. By connecting to Jackett indexers, Sonarr can compare the different torrent files that contain the media and choose the best one based on your restrictions. For example, imagine one indexer with a 720p torrent with 10 seeders, and another indexer with a 1080p torrent with 2 seeders. If your quality profile specifies &gt;=720p, and the indexer settings are all &gt;=5 seeders, Sonarr will choose the 720p torrent and send it to Deluge.<br>
+So now that you understand how Sonarr and Jackett work together, let&rsquo;s add some indexers.<br>
 <strong>In your Jackett dashboard</strong>: Click <code>+ Add Indexer</code> and choose one. For general ones, you may not need to configure anything. For sites that offer media in languages other than your own, it may be beneficial to specify categories to restrict the search to. But for many sites, all you have to do is add the site and Jackett will take care of everything else.</p>
-
-<h2 id="2-1-2-adding-trackers-sonarr">2.1.2 Adding Trackers - Sonarr</h2>
-
-<p>In Sonarr, go to <code>Settings &gt; Indexers</code> and click the big plus button to start adding an indexer. Choose <strong>Torznab</strong> Custom and fill in the name of the indexer. For the URL field, click the <code>Copy Torznab Feed</code> button next to the indexer in Jackett. Paste that, then copy the API key in the top right of Jackett and paste that into the <code>API Key</code> field. The <code>Categories</code> field can be configured in either Jackett or Sonarr or both. If doing both, make sure the categories are both the same. Set minimum seeders (I recommend 5+, as some torrent sites fuzz their numbers when there&rsquo;s little activity) and Save. Sonarr will test the connection to Jackett and the indexer, and will finish saving if everything works.<br />
+<h2 id="212-adding-trackers---sonarr">2.1.2 Adding Trackers - Sonarr</h2>
+<p>In Sonarr, go to <code>Settings &gt; Indexers</code> and click the big plus button to start adding an indexer. Choose <strong>Torznab</strong> Custom and fill in the name of the indexer. For the URL field, click the <code>Copy Torznab Feed</code> button next to the indexer in Jackett. Paste that, then copy the API key in the top right of Jackett and paste that into the <code>API Key</code> field. The <code>Categories</code> field can be configured in either Jackett or Sonarr or both. If doing both, make sure the categories are both the same. Set minimum seeders (I recommend 5+, as some torrent sites fuzz their numbers when there&rsquo;s little activity) and Save. Sonarr will test the connection to Jackett and the indexer, and will finish saving if everything works.<br>
 That&rsquo;s all that needs to be done on the Jackett front!</p>
-
-<h2 id="2-2-download-client-sonarr">2.2 Download Client - Sonarr</h2>
-
-<p>Adding Deluge to Sonarr is simple. Go to <code>Settings &gt; Download Clients</code> and click the plus button again. Choose <code>Deluge</code> and fill in the details. If deluge is on the same hardware as Sonarr, the host is localhost, and the port is the deluge-web port (8112 default). The password is the password for the web login (if you have one (you should)).<br />
+<h2 id="22-download-client---sonarr">2.2 Download Client - Sonarr</h2>
+<p>Adding Deluge to Sonarr is simple. Go to <code>Settings &gt; Download Clients</code> and click the plus button again. Choose <code>Deluge</code> and fill in the details. If deluge is on the same hardware as Sonarr, the host is localhost, and the port is the deluge-web port (8112 default). The password is the password for the web login (if you have one (you should)).<br>
 Once everything is filled out, press save and Sonarr will test the connection. If successful, congratulations! You&rsquo;re all set and can begin downloading media automatically. If Sonarr fails to connect to deluge, make sure the web UI is running (deluge-web) and can connect to the daemon (deluged). Also, it may be necessary to open the port. However, if running on the same hardware, it <em>isn&rsquo;t</em> necessary to port <em>forward</em> the ports. Opening the port allows services on the hardware to see other services that have a port, while port forwarding opens the port to the entire internet.</p>
-
 <p>By now, you should be able to: add a show/movie, search for a file, get results from multiple indexers, send a result to deluge, and catch the finished deluge download in Sonarr. In the next sections, I&rsquo;ll go over what I think are good Sonarr settings, optional remote uploading, and how to further automate some processes.</p>
-
-<h1 id="3-tweaking-some-settings">3 . Tweaking some Settings</h1>
-
-<hr />
-
-<h2 id="3-1-sonarr">3.1 Sonarr</h2>
-
+<h1 id="3--tweaking-some-settings">3 . Tweaking some Settings</h1>
+<hr>
+<h2 id="31-sonarr">3.1 Sonarr</h2>
 <p>Here are my settings for Sonarr. Note that <em>most</em> of these are highly personal: they fit my media setup and how and where I personally want things to go. If there are settings I think should be set no matter what, I&rsquo;ll explicitly say so. Also, have <em>show advanced</em> checked for additional settings.</p>
-
 <h3 id="media-management">Media Management</h3>
-
-<p><strong>Rename episodes</strong>: <em>Enabled</em> - Definitely enable so your files aren&rsquo;t named <code>[YIFY] Over.The.Hedge.2006.720p.8bit [HVEC]</code> and worse. Enabling this setting will show the <em>Format</em> fields, which can be named according to your preferences.<br />
-<strong>Replace Illegal Characters</strong>: <em>Enabled</em> - Don&rsquo;t want little bobby tables breaking your OS&hellip; or something.<br />
-<strong>Import Extra Files</strong>: <em>Enabled</em> - I want subtitle files that aren&rsquo;t embedded: <code>srt, ass, sub</code>.<br />
-<strong>Download Propers</strong>: <em>Enabled</em><br />
-<strong>Analyse video files</strong>: <em>Enabled</em><br />
-<strong>Rescan Series Folders after Refresh</strong>: <em>Always</em><br />
+<p><strong>Rename episodes</strong>: <em>Enabled</em> - Definitely enable so your files aren&rsquo;t named <code>[YIFY] Over.The.Hedge.2006.720p.8bit [HVEC]</code> and worse. Enabling this setting will show the <em>Format</em> fields, which can be named according to your preferences.<br>
+<strong>Replace Illegal Characters</strong>: <em>Enabled</em> - Don&rsquo;t want little bobby tables breaking your OS&hellip; or something.<br>
+<strong>Import Extra Files</strong>: <em>Enabled</em> - I want subtitle files that aren&rsquo;t embedded: <code>srt, ass, sub</code>.<br>
+<strong>Download Propers</strong>: <em>Enabled</em><br>
+<strong>Analyse video files</strong>: <em>Enabled</em><br>
+<strong>Rescan Series Folders after Refresh</strong>: <em>Always</em><br>
 <strong>Change File Date</strong>: <em>None</em></p>
-
 <h3 id="profiles">Profiles</h3>
-
 <p>Profiles are of course dependent not only on the minimum quality you can handle, but also on the type of media you&rsquo;re going to download. Old shows and movies? Probably going to want 480p minimum, maybe lower to be safe. Newer content will almost always be available in 1080p+. Here&rsquo;s my profile I use, which tries to get up to 1080p, and will accept anything 480p+ until it gets to 1080p.</p>
-
-<p><strong>Upgrades Allowed</strong>: <em>Enabled</em><br />
-<strong>Upgrade Until</strong>: <em>Bluray-1080p</em><br />
+<p><strong>Upgrades Allowed</strong>: <em>Enabled</em><br>
+<strong>Upgrade Until</strong>: <em>Bluray-1080p</em><br>
 <strong>Qualities</strong>: Everything from <code>WEB 480p</code> to <code>Bluray-1080p Remux</code> is checked, except for <code>Raw-HD</code></p>
-
 <h3 id="quality">Quality</h3>
-
 <p>Here&rsquo;s for really fine-grained control over what qualifies each quality. I&rsquo;d recommend changing everything to have a <strong>maximum</strong> size, instead of unlimited. Be generous, like 10GB max for 1080p. I have the maximums in place because Sonarr will often choose a 1080p file that is <em>extremely</em> high quality, like 15k+ kbps bitrate which ends up with a 20+ GB 1.5 hour movie. While it looks great, it&rsquo;s (<strong>in my opinion</strong>) too large of a file for almost imperceptible differences to a 7.5k-10k kbps file.</p>
-
 <h3 id="indexers">Indexers</h3>
-
 <p>It should already be configured, except for the options underneath the indexers. I leave everything default except for the <strong>RSS Sync Interval</strong>, I have it at <em>60 minutes</em> so I don&rsquo;t get IP blocked by indexers. This is a super conservative number, but also I don&rsquo;t need to check for new releases every 10 minutes (which you could most likely get away with).</p>
-
 <h3 id="download-clients">Download Clients</h3>
-
 <p>Deluge should be configured. In the options, I&rsquo;d recommend enabling everything for safety, even though later in this article I&rsquo;ll be automatically removing downloads through a script and <code>cron</code>.</p>
-
 <h3 id="connect">Connect</h3>
-
 <p>I don&rsquo;t use this. This section is for notifying other services about the status of Sonarr. Think webhooks.</p>
-
 <h3 id="metadata">Metadata</h3>
-
 <p>I also don&rsquo;t use this section, as I use Plex. This section generates metadata for files for specific media aggregators, like Kodi and can be useful.</p>
-
 <h3 id="tags">Tags</h3>
-
 <p>I don&rsquo;t use tags</p>
-
 <h3 id="general">General</h3>
-
-<p>Here you can change the port number (I leave mine default on 8989) and other security settings. I <strong><em>highly</em></strong> recommend setting a form of authentication for Sonarr if you are planning on having your Sonarr instance available on the web.</p>
-
+<p>Here you can change the port number (I leave mine default on 8989) and other security settings. I <em><strong>highly</strong></em> recommend setting a form of authentication for Sonarr if you are planning on having your Sonarr instance available on the web.</p>
 <h3 id="ui">UI</h3>
-
 <p>These settings are region-specific and personal.</p>
-
-<h2 id="3-2-radarr">3.2 Radarr</h2>
-
+<h2 id="32-radarr">3.2 Radarr</h2>
 <p>As Radarr is a fork of Sonarr, there will be a lot of overlap in the settings. Really, the only significant difference between the two&rsquo;s settings is the media management.</p>
-
 <h3 id="media-management-1">Media Management</h3>
-
-<p><strong>Rename Movies</strong>: <em>Enabled</em> - Definitely don&rsquo;t want the torrent-supplied filenames.<br />
-<strong>Replace Illegal Characters</strong>: <em>Enabled</em><br />
-<strong>Standard Movie/Folder Format</strong>: I have mine very simple: <code>{Movie Title} ({Release Year})</code><br />
-<strong>Automatically Rename Folders</strong>: <em>Enabled</em><br />
-<strong>Analyse video files</strong>: <em>Enabled</em><br />
+<p><strong>Rename Movies</strong>: <em>Enabled</em> - Definitely don&rsquo;t want the torrent-supplied filenames.<br>
+<strong>Replace Illegal Characters</strong>: <em>Enabled</em><br>
+<strong>Standard Movie/Folder Format</strong>: I have mine very simple: <code>{Movie Title} ({Release Year})</code><br>
+<strong>Automatically Rename Folders</strong>: <em>Enabled</em><br>
+<strong>Analyse video files</strong>: <em>Enabled</em><br>
 Again, change these settings as you want your media to be organized.</p>
-
 <h3 id="everything-else">Everything else</h3>
-
 <p>Everything else is about the same as Sonarr or has already been set up (indexers and clients).</p>
-
-<h1 id="4-automation">4 . Automation</h1>
-
+<h1 id="4--automation">4 . Automation</h1>
 <p>This is the fun part. In this section, I&rsquo;ll cover the scripts I use to automatically do tasks. One of the most useful ones I use is the Deluge watcher.</p>
-
-<h2 id="4-1-deluge-watcher">4.1 Deluge Watcher</h2>
-
-<p>The deluge daemon has CLI commands that can be run to query the status of Deluge. It also has the ability to modify torrents, such as adding and removing them. Instead of just posting my script, I&rsquo;m going to go through the individual commands and explain them.</p>
-<div class="highlight"><pre style="color:#fff;background-color:#111;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">deluge-console -c /home/vpn/.config/deluge info -s Downloading | gawk <span style="color:#0086d2">&#39;/ID/,/Error/&#39;</span> | grep -C <span style="color:#0086f7;font-weight:bold">5</span> <span style="color:#0086d2">&#34;Seeds: 0&#34;</span> | grep -B <span style="color:#0086f7;font-weight:bold">4</span> <span style="color:#0086d2">&#34;Active: [1-9] days&#34;</span> | grep <span style="color:#0086d2">&#34;ID&#34;</span> | sed <span style="color:#0086d2">&#39;s/^....//&#39;</span> &gt; downloadIds.txt</code></pre></div>
-<p>This is a meaty single-liner that probably shouldn&rsquo;t exist.<br />
+<h2 id="41-deluge-watcher">4.1 Deluge Watcher</h2>
+<p>The deluge daemon has CLI commands that can be run to query the status of Deluge. It also has the ability to modify torrents, such as adding and removing them. Instead of just posting my script, I&rsquo;m going to go through the individual commands and explain them.\</p>
+<div class="highlight"><pre style="color:#fff;background-color:#111;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">deluge-console -c /home/vpn/.config/deluge info -s Downloading | gawk <span style="color:#0086d2">&#39;/ID/,/Error/&#39;</span> | grep -C <span style="color:#0086f7;font-weight:bold">5</span> <span style="color:#0086d2">&#34;Seeds: 0&#34;</span> | grep -B <span style="color:#0086f7;font-weight:bold">4</span> <span style="color:#0086d2">&#34;Active: [1-9] days&#34;</span> | grep <span style="color:#0086d2">&#34;ID&#34;</span> | sed <span style="color:#0086d2">&#39;s/^....//&#39;</span> &gt; downloadIds.txt
+</code></pre></div><p>This is a meaty single-liner that probably shouldn&rsquo;t exist.<br>
 The logic behind this command is simple: find torrents that are inactive and unlikely to download anything. Let&rsquo;s take a look at what <code>deluge-console info -s Downloading</code> gives us, and narrow it down from there.</p>
 <div class="highlight"><pre style="color:#fff;background-color:#111;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ deluge-console -c /home/vpn/.config/deluge info -s Downloading
 &gt; Name: &lt;The torrent&#39;s name&gt;
 &gt; ID: a196f656c05e241f34159c712cb21edd34c7fa27
-&gt; State: Downloading Down Speed: <span style="color:#0086f7;font-weight:bold">0</span>.0 KiB/s Up Speed: <span style="color:#0086f7;font-weight:bold">0</span>.0 KiB/s
-&gt; Seeds: <span style="color:#0086f7;font-weight:bold">0</span> (-1) Peers: <span style="color:#0086f7;font-weight:bold">0</span> (-1) Availability: <span style="color:#0086f7;font-weight:bold">0</span>.00
-&gt; Size: <span style="color:#0086f7;font-weight:bold">0</span>.0 KiB/0.0 KiB Ratio: -1.000
-&gt; Seed time: <span style="color:#0086f7;font-weight:bold">0</span> days <span style="color:#0086f7;font-weight:bold">00</span>:00:00 Active: <span style="color:#0086f7;font-weight:bold">9</span> days <span style="color:#0086f7;font-weight:bold">02</span>:47:03
+&gt; State: Downloading Down Speed: 0.0 KiB/s Up Speed: 0.0 KiB/s
+&gt; Seeds: <span style="color:#0086f7;font-weight:bold">0</span> (-1) Peers: <span style="color:#0086f7;font-weight:bold">0</span> (-1) Availability: 0.00
+&gt; Size: 0.0 KiB/0.0 KiB Ratio: -1.000
+&gt; Seed time: <span style="color:#0086f7;font-weight:bold">0</span> days 00:00:00 Active: <span style="color:#0086f7;font-weight:bold">9</span> days 02:47:03
 &gt; Tracker status: indexer.com: Error: Operation canceled
-&gt; Progress: <span style="color:#0086f7;font-weight:bold">0</span>.00% [~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~]</code></pre></div>
-<p>Deluge uses a torrent&rsquo;s <em>ID</em> to identify it. That&rsquo;s what we use to do stuff to it, such as removing it from the queue. So now that we know the output, I&rsquo;ll go through each piped command that narrows it down.</p>
-<div class="highlight"><pre style="color:#fff;background-color:#111;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">gawk <span style="color:#0086d2">&#39;/ID/,/Error/&#39;</span></code></pre></div>
-<p>Find the word <em>ID</em>, and select that <strong>line</strong> and following lines up to the word <em>Error</em>. If a torrent doesn&rsquo;t have an error, it won&rsquo;t be matched. Pipe the results.</p>
-<div class="highlight"><pre style="color:#fff;background-color:#111;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">grep -C <span style="color:#0086f7;font-weight:bold">5</span> <span style="color:#0086d2">&#34;Seeds: 0&#34;</span></code></pre></div>
-<p>Search for the word &ldquo;Seeds: 0&rdquo;, and give <em>5</em> lines of <strong>C</strong>ontext around the matched word&rsquo;s line. This returns the lines from <code>ID:</code> to <code>Tracker status:</code>. This selects only torrents with status <code>error</code> and <code>seeds = 0</code>, because sometimes a torrent with <code>error</code> status will still be able to complete a torrent. Pipe the results.</p>
-<div class="highlight"><pre style="color:#fff;background-color:#111;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">grep -B <span style="color:#0086f7;font-weight:bold">4</span> <span style="color:#0086d2">&#34;Active: [1-9] days&#34;</span></code></pre></div>
-<p>Search for the word <code>Active: [1-9] days</code>. The <code>[1-9]</code> is a <a href="https://gist.github.com/vitorbritto/9ff58ef998100b8f19a0#groups-and-ranges">regex</a> that will match any digit from 1-9, inclusive. This means that, now, torrents with <code>error</code> status, no seeders, and over 1 day in the queue will be matched. That&rsquo;s all I want, and it has served me perfectly. Pipe the results.</p>
-<div class="highlight"><pre style="color:#fff;background-color:#111;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">grep <span style="color:#0086d2">&#34;ID&#34;</span></code></pre></div>
-<p>Take the ID from each torrent that fits the criteria above, and pipe them to:</p>
-<div class="highlight"><pre style="color:#fff;background-color:#111;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">sed <span style="color:#0086d2">&#39;s/^....//&#39;</span> &gt; downloadIds.txt</code></pre></div>
-<p>This is the most arcane-looking command. Breaking it down shows how simple it is:</p>
-
+&gt; Progress: 0.00% [~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~]
+</code></pre></div><p>Deluge uses a torrent&rsquo;s <em>ID</em> to identify it. That&rsquo;s what we use to do stuff to it, such as removing it from the queue. So now that we know the output, I&rsquo;ll go through each piped command that narrows it down.</p>
+<div class="highlight"><pre style="color:#fff;background-color:#111;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">gawk <span style="color:#0086d2">&#39;/ID/,/Error/&#39;</span>
+</code></pre></div><p>Find the word <em>ID</em>, and select that <strong>line</strong> and following lines up to the word <em>Error</em>. If a torrent doesn&rsquo;t have an error, it won&rsquo;t be matched. Pipe the results.</p>
+<div class="highlight"><pre style="color:#fff;background-color:#111;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">grep -C <span style="color:#0086f7;font-weight:bold">5</span> <span style="color:#0086d2">&#34;Seeds: 0&#34;</span>
+</code></pre></div><p>Search for the word &ldquo;Seeds: 0&rdquo;, and give <em>5</em> lines of <strong>C</strong>ontext around the matched word&rsquo;s line. This returns the lines from <code>ID:</code> to <code>Tracker status:</code>. This selects only torrents with status <code>error</code> and <code>seeds = 0</code>, because sometimes a torrent with <code>error</code> status will still be able to complete a torrent. Pipe the results.</p>
+<div class="highlight"><pre style="color:#fff;background-color:#111;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">grep -B <span style="color:#0086f7;font-weight:bold">4</span> <span style="color:#0086d2">&#34;Active: [1-9] days&#34;</span>
+</code></pre></div><p>Search for the word <code>Active: [1-9] days</code>. The <code>[1-9]</code> is a <a href="https://gist.github.com/vitorbritto/9ff58ef998100b8f19a0#groups-and-ranges">regex</a> that will match any digit from 1-9, inclusive. This means that, now, torrents with <code>error</code> status, no seeders, and over 1 day in the queue will be matched. That&rsquo;s all I want, and it has served me perfectly. Pipe the results.</p>
+<div class="highlight"><pre style="color:#fff;background-color:#111;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">grep <span style="color:#0086d2">&#34;ID&#34;</span>
+</code></pre></div><p>Take the ID from each torrent that fits the criteria above, and pipe them to:</p>
+<div class="highlight"><pre style="color:#fff;background-color:#111;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">sed <span style="color:#0086d2">&#39;s/^....//&#39;</span> &gt; downloadIds.txt
+</code></pre></div><p>This is the most arcane-looking command. Breaking it down shows how simple it is:\</p>
 <pre><code>s/^....//
 s          indicate this is a **s**earch function
  /         indicates that the following is the search context
@@ -216,75 +152,59 @@ s          indicate this is a **s**earch function
    ....    match any character. Since it's repeated 4 times, it will match 4 characters
        /   indicates the end of the search context, and what follows is the replace context
         /  indicates the end of the replace context. Since it's empty, the selected text will be replaced with nothing.
-</code></pre>
-
-<p>I mostly just wanted to do the staggered breakdown like <a href="https://codegolf.stackexchange.com/a/103632">codegolfers do</a> for this section :)</p>
-
-<p>Anyway, in the end, the IDs of Deluge torrents that are unlikely to download anything are added to a file named <em>downloadIds.txt</em>.<br />
+</code></pre><p>I mostly just wanted to do the staggered breakdown like <a href="https://codegolf.stackexchange.com/a/103632">codegolfers do</a> for this section :)</p>
+<p>Anyway, in the end, the IDs of Deluge torrents that are unlikely to download anything are added to a file named <em>downloadIds.txt</em>.<br>
 Maybe <em>downloadIds.txt</em> is empty, as no torrents with errors? Check that with this:</p>
 <div class="highlight"><pre style="color:#fff;background-color:#111;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#fb660a;font-weight:bold">if</span> [ ! -s downloadIds.txt ]
 <span style="color:#fb660a;font-weight:bold">then</span>
   echo <span style="color:#0086d2">&#34;downloadIds.txt is empty, nothing to do&#34;</span>
-  rm downloadIds.txt <span style="color:#0086f7;font-weight:bold">2</span>&gt; /dev/null
+  rm downloadIds.txt 2&gt; /dev/null
   exit
-<span style="color:#fb660a;font-weight:bold">fi</span></code></pre></div>
-<p>If you find that <code>rm</code> doesn&rsquo;t work, toss a <code>-f</code> flag to show just how much you mean it.</p>
-
+<span style="color:#fb660a;font-weight:bold">fi</span>
+</code></pre></div><p>If you find that <code>rm</code> doesn&rsquo;t work, toss a <code>-f</code> flag to show just how much you mean it.</p>
 <p>Sonarr can operate on Deluge ID&rsquo;s, but they have to be uppercase for some reason:</p>
 <div class="highlight"><pre style="color:#fff;background-color:#111;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">tr a-z A-Z &lt; downloadIds.txt &gt; downloadIdsTEMP.txt
 rm downloadIds.txt
-mv downloadIdsTEMP.txt downloadIds.txt</code></pre></div>
-<p><code>tr</code>, short for <strong>tr</strong>anslate, takes (<code>&lt;</code>) the downloadIds.txt in as input, turns a-z characters uppercase A-Z, then outputs to a new file <em>downloadIdsTEMP.txt</em>, because the input is read line-by-line, and you don&rsquo;t want to cross the input/output streams!</p>
-
+mv downloadIdsTEMP.txt downloadIds.txt
+</code></pre></div><p><code>tr</code>, short for <strong>tr</strong>anslate, takes (<code>&lt;</code>) the downloadIds.txt in as input, turns a-z characters uppercase A-Z, then outputs to a new file <em>downloadIdsTEMP.txt</em>, because the input is read line-by-line, and you don&rsquo;t want to cross the input/output streams!</p>
 <p>Next, get the queue that Sonarr has with a cURL request (have your IP and API key at the ready)</p>
-<div class="highlight"><pre style="color:#fff;background-color:#111;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">curl -s -X GET -G <span style="color:#0086d2">&#34;</span><span style="color:#fb660a">$IP</span><span style="color:#0086d2">/api/queue/&#34;</span> -d <span style="color:#fb660a">apikey</span>=<span style="color:#fb660a">$APIKEY</span> &gt;&gt; json.txt</code></pre></div>
-<p><code>-s</code> for a <strong>s</strong>ilent request (no console output), <code>-X</code> specifies a request type, and is tied to <code>-G</code> for <strong>g</strong>et. <code>-d</code> sends additional <strong>d</strong>ata with the request, and Sonarr requires the API key for authentication. The whole <em>JSON</em> request then gets piped into *json.txt**.</p>
-
+<div class="highlight"><pre style="color:#fff;background-color:#111;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">curl -s -X GET -G <span style="color:#0086d2">&#34;</span><span style="color:#fb660a">$IP</span><span style="color:#0086d2">/api/queue/&#34;</span> -d <span style="color:#fb660a">apikey</span>=<span style="color:#fb660a">$APIKEY</span> &gt;&gt; json.txt
+</code></pre></div><p><code>-s</code> for a <strong>s</strong>ilent request (no console output), <code>-X</code> specifies a request type, and is tied to <code>-G</code> for <strong>g</strong>et. <code>-d</code> sends additional <strong>d</strong>ata with the request, and Sonarr requires the API key for authentication. The whole <em>JSON</em> request then gets piped into <em>json.txt</em>*.</p>
 <p>Next, we use the <em>Deluge</em> IDs to match them with their respective <em>Sonarr</em> IDs.</p>
 <div class="highlight"><pre style="color:#fff;background-color:#111;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#fb660a;font-weight:bold">while</span> read downloadId; <span style="color:#fb660a;font-weight:bold">do</span>
  awk -v <span style="color:#fb660a">id</span>=<span style="color:#0086d2">&#34;</span><span style="color:#fb660a">$downloadId</span><span style="color:#0086d2">&#34;</span> <span style="color:#0086d2">&#39;$0 ~ id { getline; getline; print }&#39;</span> json.txt | sed <span style="color:#0086d2">&#39;s/^..........//&#39;</span> &gt;&gt; sonarrIds.txt
-<span style="color:#fb660a;font-weight:bold">done</span> &lt; downloadIds.txt</code></pre></div>
-<p>I&rsquo;m gonna be honest, I forget what this exactly does, except I remember being annoyed by setting variables inside <code>awk</code>. The <code>-v</code> flag sets a variable, which is used inside the <code>awk</code> &ldquo;function&rdquo;. The function searches for the given ID, then prints two lines after it for <code>sed</code> to deal with.<br />
+<span style="color:#fb660a;font-weight:bold">done</span> &lt; downloadIds.txt
+</code></pre></div><p>I&rsquo;m gonna be honest, I forget what this exactly does, except I remember being annoyed by setting variables inside <code>awk</code>. The <code>-v</code> flag sets a variable, which is used inside the <code>awk</code> &ldquo;function&rdquo;. The function searches for the given ID, then prints two lines after it for <code>sed</code> to deal with.<br>
 The <code>sed</code> command is the same as the one from before, but this time with more periods to match more unneeded characters in front of the sonarr ID.</p>
-
 <p>Lastly, we take the Sonarr IDs we care about and tell Sonarr to delete them from its queue. Sonarr will also delete it from Deluge, making it pretty convenient for us, right? Easy? Right?</p>
 <div class="highlight"><pre style="color:#fff;background-color:#111;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#fb660a;font-weight:bold">while</span> read ID; <span style="color:#fb660a;font-weight:bold">do</span>
  curl -s -X DELETE -G <span style="color:#0086d2">&#34;</span><span style="color:#fb660a">$IP</span><span style="color:#0086d2">/api/queue/</span><span style="color:#fb660a">$ID</span><span style="color:#0086d2">&#34;</span> -d <span style="color:#fb660a">blacklist</span>=true -d <span style="color:#fb660a">apikey</span>=<span style="color:#fb660a">$APIKEY</span>
  sleep <span style="color:#0086f7;font-weight:bold">1</span> <span style="color:#080;background-color:#0f140f;font-style:italic"># just to be safe</span>
-<span style="color:#fb660a;font-weight:bold">done</span> &lt; sonarrIDs.txt</code></pre></div>
-<p>Similar to the previous cURL, but instead of a <code>GET</code> request we&rsquo;re asking for Sonarr to <code>DELETE</code> something.</p>
-<div class="highlight"><pre style="color:#fff;background-color:#111;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">rm downloadIds.txt <span style="color:#0086f7;font-weight:bold">2</span>&gt; /dev/null
-rm sonarrIds.txt <span style="color:#0086f7;font-weight:bold">2</span>&gt; /dev/null
-rm json.txt <span style="color:#0086f7;font-weight:bold">2</span>&gt; /dev/null</code></pre></div>
-<p>I lied about the <em>lastly</em> part earlier. But now this script is done for real. Congrats! If you made it this far, I&rsquo;m sorry!</p>
-
-<h2 id="4-2-watchdogs">4.2 Watchdogs</h2>
-
+<span style="color:#fb660a;font-weight:bold">done</span> &lt; sonarrIDs.txt
+</code></pre></div><p>Similar to the previous cURL, but instead of a <code>GET</code> request we&rsquo;re asking for Sonarr to <code>DELETE</code> something.</p>
+<div class="highlight"><pre style="color:#fff;background-color:#111;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">rm downloadIds.txt 2&gt; /dev/null
+rm sonarrIds.txt 2&gt; /dev/null
+rm json.txt 2&gt; /dev/null
+</code></pre></div><p>I lied about the <em>lastly</em> part earlier. But now this script is done for real. Congrats! If you made it this far, I&rsquo;m sorry!</p>
+<h2 id="42-watchdogs">4.2 Watchdogs</h2>
 <p>First and foremost, I <em>highly</em> recommend not following anything in this section (or the rest of this page, I guess). I use <code>screen</code> for all my services, which is definitely not a good way to do it. Look up how to run processes with something like <code>systemctl</code>, which is installed by default on most/all Linux systems. It&rsquo;s much more robust and reliable.</p>
-
 <p>I have a <code>watchdog.sh</code> script that periodically (through <code>cron</code>) checks whether all my processes are running in <code>screen</code>. Here is one block for <em>rclone</em>:</p>
 <div class="highlight"><pre style="color:#fff;background-color:#111;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#fb660a">GREP</span>=<span style="color:#0086d2">&#34;/bin/grep&#34;</span>
 <span style="color:#fb660a">SCREEN</span>=<span style="color:#0086d2">&#34;/usr/bin/screen&#34;</span>
 <span style="color:#fb660a;font-weight:bold">if</span> ! <span style="color:#fb660a">$SCREEN</span> -ls | <span style="color:#fb660a">$GREP</span> -q <span style="color:#0086d2">&#34;mount&#34;</span> ; <span style="color:#fb660a;font-weight:bold">then</span>
  <span style="color:#fb660a">$SCREEN</span> -dmS mount bash -c <span style="color:#0086d2">&#39;rclone mount drive: /mnt/drive --vfs-cache-mode off -v --retries 5 --retries-sleep=5s&#39;</span>
  echo <span style="color:#0086d2">&#34;[</span><span style="color:#fb660a;font-weight:bold">$(</span>date +%c<span style="color:#fb660a;font-weight:bold">)</span><span style="color:#0086d2">]: Rclone mount restarted&#34;</span> &gt;&gt; .watchdog.log
-<span style="color:#fb660a;font-weight:bold">fi</span></code></pre></div>
-<p>The <code>grep</code> and <code>screen</code> commands have to be fully referenced if run from <code>cron</code>, as it doesn&rsquo;t run from <code>bash</code> and have the <code>PATH</code> everyone&rsquo;s used to.</p>
-
+<span style="color:#fb660a;font-weight:bold">fi</span>
+</code></pre></div><p>The <code>grep</code> and <code>screen</code> commands have to be fully referenced if run from <code>cron</code>, as it doesn&rsquo;t run from <code>bash</code> and have the <code>PATH</code> everyone&rsquo;s used to.</p>
 <h1 id="5-rclone-uploading">5 Rclone Uploading</h1>
-
 <p>Finally. The last piece of the puzzle is (optionally!) uploading the content. If you are doing all of this locally, you may not even need to do this. But I send all of my media to Google Drive and have a rclone mount to handle it.</p>
-
-<h2 id="5-1-rclone-mount">5.1 Rclone mount</h2>
-
+<h2 id="51-rclone-mount">5.1 Rclone mount</h2>
 <p>The previous code in <strong>4.2 Watchdogs</strong> is actually my rclone <code>mount</code> configuration. With that, rclone will make a virtual drive located at <code>/mnt/drive</code> which will mirror my Google Drive. When adding content to Sonarr, simply make sure the path is in the <code>/mnt/drive</code> area. When Sonarr finishes a download, the file will be moved to the rclone mount. Rclone will then handle uploading it to Drive, and that&rsquo;s it! This is probably the easiest step. And best, because it&rsquo;s the last one.</p>
-
-<h1 id="6-conclusion">6 . Conclusion</h1>
-
-<p>So that&rsquo;s it. Now, all I have to do when I want a show or movie is go to a very nice looking web interface and add it. Then, minutes later (thanks to a VPS having blazing fast speeds), the content is uploaded and ready to be streamed. My content aggregator of choice is <a href="https://www.plex.tv/">Plex</a>, and all I have to do is point Plex to where the media is located and everything else is taken care of.<br />
-Sure, it&rsquo;s a really actually huge big deal to get all the backend stuff set up, but it&rsquo;s mostly just set-and-forget at this point. All of the info here is the result of months of research and trial-and-error and wiping the VPS and restarting because I broke something. A lot of the extra stuff in here can be excluded, but I really wouldn&rsquo;t skip out since I have figured out a decent solution for it already. And the extra little things make a big difference, especially the auto-remove of dead torrents.<br />
-This&hellip; article? I guess? It is the result of about a year of work and refinement. It&rsquo;s been rewritten twice because I changed how I was managing my media, and I&rsquo;m really happy I finally have it all written up. While my solutions aren&rsquo;t perfect, it&rsquo;s all learning. Take pieces of code from here and make yours better with your knowledge, because that&rsquo;s what I did. And after about a year of fiddling with this, I&rsquo;ve gone from a &ldquo;Yeah, I can make my way around Linux&rdquo; to &ldquo;Yeah I&rsquo;ve got a solid grasp on the basics of Linux, but it just keeps going - like seriously, how iptables?&rdquo;<br />
-If you want to tell me this is dumb: email me at pro@zpar.ky</p>
+<h1 id="6--conclusion">6 . Conclusion</h1>
+<p>So that&rsquo;s it. Now, all I have to do when I want a show or movie is go to a very nice looking web interface and add it. Then, minutes later (thanks to a VPS having blazing fast speeds), the content is uploaded and ready to be streamed. My content aggregator of choice is <a href="https://www.plex.tv/">Plex</a>, and all I have to do is point Plex to where the media is located and everything else is taken care of.<br>
+Sure, it&rsquo;s a really actually huge big deal to get all the backend stuff set up, but it&rsquo;s mostly just set-and-forget at this point. All of the info here is the result of months of research and trial-and-error and wiping the VPS and restarting because I broke something. A lot of the extra stuff in here can be excluded, but I really wouldn&rsquo;t skip out since I have figured out a decent solution for it already. And the extra little things make a big difference, especially the auto-remove of dead torrents.<br>
+This&hellip; article? I guess? It is the result of about a year of work and refinement. It&rsquo;s been rewritten twice because I changed how I was managing my media, and I&rsquo;m really happy I finally have it all written up. While my solutions aren&rsquo;t perfect, it&rsquo;s all learning. Take pieces of code from here and make yours better with your knowledge, because that&rsquo;s what I did. And after about a year of fiddling with this, I&rsquo;ve gone from a &ldquo;Yeah, I can make my way around Linux&rdquo; to &ldquo;Yeah I&rsquo;ve got a solid grasp on the basics of Linux, but it just keeps going - like seriously, how iptables?&quot;<br>
+If you want to tell me this is dumb: email me at <a href="mailto:pro@zpar.ky">pro@zpar.ky</a></p>
 </div><div class="section bottom-menu"><hr/><p><a href="/posts">back</a>
  &#183;
 
