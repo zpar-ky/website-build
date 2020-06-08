@@ -6,10 +6,20 @@
     <description>Recent content in scripting on I&#39;m Andrew!</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Thu, 27 Jun 2019 12:49:22 -0500</lastBuildDate>
+    <lastBuildDate>Sun, 07 Jun 2020 13:00:00 -0500</lastBuildDate>
     
 	<atom:link href="https://zpar.ky/tags/scripting/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Setting up a Homelab Docker Server (and More)</title>
+      <link>https://zpar.ky/posts/setting-up-a-server/</link>
+      <pubDate>Sun, 07 Jun 2020 13:00:00 -0500</pubDate>
+      
+      <guid>https://zpar.ky/posts/setting-up-a-server/</guid>
+      <description>Table of Contents  Introduction Before the OS: Setting up RAID Installing the OS (CentOS 7) The Base Packages Security Monitoring with Grafana Docker Setup  0 . Introduction The goal of this post will be to go from a blank server to a server running Docker for software containerization, as well other software for more advanced usage like VMs.
+For some background, I&amp;rsquo;d like to say that I&amp;rsquo;ve been following the homelab community for quite some time.</description>
+    </item>
     
     <item>
       <title>How I Automate My Media Needs</title>

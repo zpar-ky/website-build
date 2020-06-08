@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en-US">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="MobileOptimized" content="320">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="referrer" content="no-referrer">
+    
+    <meta name="description" content="The personal blog of Andrew Novak.">
+    
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:domain" content="https://zpar.ky/">
+    
+    <meta name="twitter:image" content="https://zpar.ky/tn.png">
+    <meta name="twitter:title" property="og:title" itemprop="title name" content="I&#39;m Andrew!">
+    <meta name="twitter:description" property="og:description" itemprop="description" content="The personal blog of Andrew Novak.">
+    <meta name="og:type" content="website">
+    <meta name="og:url" content="https://zpar.ky/">
+    <meta name="og:image" itemprop="image primaryImageOfPage" content="https://zpar.ky/tn.png">
+    
+    <title>Setting up a Homelab Docker Server (and More)</title>
+    <link rel="shortcut icon" href="https://zpar.ky/andrew.ico" id="favicon">
+    <link rel="stylesheet" href="https://zpar.ky/css/style.css">
+    
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+        crossorigin="anonymous"></script>
+    
+    
+
+</head>
+
+</html>
+<body><div class="wrap"><div class="section" id="title">Setting up a Homelab Docker Server (and More)</div><div class="section" id="content">Sun Jun 07, 2020 &#183; 3134 words
+
+<div class="tag-container"><span class="tag"><a href="https://zpar.ky/tags/scripting">scripting</a></span></div><hr/>
+
+<h1 id="table-of-contents">Table of Contents</h1>
+
+<ol>
+<li>Introduction</li>
+<li>Before the OS: Setting up RAID</li>
+<li>Installing the OS (CentOS 7)</li>
+<li>The Base Packages</li>
+<li>Security</li>
+<li>Monitoring with Grafana</li>
+<li>Docker Setup</li>
+</ol>
+
+<h1 id="0-introduction">0 . Introduction</h1>
+
+<p>The goal of this post will be to go from a blank server to a server running Docker for software <em>containerization</em>, as well other software for more advanced usage like VMs.<br />
+For some background, I&rsquo;d like to say that I&rsquo;ve been following the homelab community for quite some time. And I spent a lot of hands-on time with enterprise server hardware while working at FPN. I was constantly checking <a href="https://www.labgopher.com/">LabGopher</a> for listings on eBay for servers, in the hopes of snagging a good deal on some quality hardware. After a little while, I found a <em>really</em> good deal on a HP Proliant DL380p G8. It was wiped clean and had everything I needed to get up and running.<br />
+Since I feel like this definitely a niche topic for more advanced Linux users, I&rsquo;m going to make several assumptions about readers&rsquo; skill level. Nothing I&rsquo;m going to be doing is very complex or arcane, and I&rsquo;ll try my best to explain what&rsquo;s happening. But I will assume that you have a good understanding of general Linux, such as:<br />
+* most default commands (<code>sudo</code>, <code>grep</code>, etc)
+* the file structure of Linux
+* Docker
+* mysql/postgresql/some other db package familiarity is useful for some Docker containers</p>
+
+<p>Being familiar with these topics are useful if you have a specific use case, or want to modify what I have below to fit your needs.<br />
+Lastly, I&rsquo;m assuming that the server hardware you have is similar to mine (because I only have one server to test on). Feel free to skip sections, as I try to have some modularity between sections so nothing depends on another sections (apart from the obvious - such as requiring an OS to install stuff on).</p>
+
+<hr />
+
+<h1 id="1-before-the-os-setting-up-raid">1 . Before the OS: Setting up RAID</h1>
+
+<p>My server came with 12 3TB SAS disks, which was a huge score. They do have over 30,000 power on hours, though, but SAS drives are almost apocalypse-proof and I have a few spares.<br />
+But the great thing about having so many drives are the RAID possibilities. Another prudent choice would be going with <a href="https://en.wikipedia.org/wiki/ZFS">ZFS</a> or really any other volume manager that you like. For my server I ran with <a href="https://en.wikipedia.org/wiki/Standard_RAID_levels#RAID_6">RAID 6</a>. It keeps a good tradeoff between performance and fault tolerance. Compared to other non-nested RAID levels, it has two drive fault tolerance, which is extremely useful when one drive fails and is replaced. When the drive is replaced, the rebuild (restoring parity with a new drive, essentially &ldquo;bringing it up to speed&rdquo;) puts heavy read use on all drives in the array. In the unlikely (but heightened) chance of <em>another</em> drive failure during a rebuild, the array can still be rebuilt. This was particularly valuable to me with my extremely used drives.<br />
+This choice was based on my situation, and you should carefully consider the drives you have, how you want to use them, and what you expect out of them. Each RAID level has different solutions to each of those statements, and there&rsquo;s even entire filesystems (like ZFS) that also try to solve more cases under one umbrella.</p>
+
+<hr />
+
+<p>My HP server came with a hardware RAID controller as well. This made setting up RAID straightforward through the GUI. The GUI walked me through selecting drives, allocating space, and choosing the RAID level in basically a foolproof setup. I&rsquo;m going to assume you can get yourself through whatever GUI your controller/server has for you, or you can muscle through some other way.<br />
+When setting up your filesystem, make sure to set it up on your entire physical disk array (unless you&rsquo;re doing your own thing). In section #2, I&rsquo;ll explain how to allocate the disk space for the OS for maximum flexibility later on.<br />
+Once you have your filesystem all setup with a nice, clean, redundant blank slate, you&rsquo;re ready to install the OS.<br />
+(Oh, and make sure to poke around the BIOS. There&rsquo;s cool stuff in there. Don&rsquo;t mess with stuff you haven&rsquo;t adequately RTFM on though, for sure.)</p>
+
+<hr />
+
+<h1 id="2-installing-the-os-centos-7">2 . Installing the OS (CentOS 7)</h1>
+
+<p>This section is another step that is well-guided by easy to follow installation GUIs. There isn&rsquo;t much that isn&rsquo;t clear in the visual installer, so I believe in you to do the right thing.<br />
+However, there is one thing I really want to emphasize, and that is volume allocation. <em>Please</em> only allocate what you need right now, <strong>not</strong> all of your space (unless you don&rsquo;t have a whole lot to begin with. I&rsquo;m talking &lt;1TB). Here&rsquo;s why:<br />
+I have 36TB of raw storage. I&rsquo;ve currently allocated 3TB in CentOS. I know I won&rsquo;t be going through that much data too quickly, so I didn&rsquo;t allocate all my storage space right away. CentOS&rsquo;s LVM (logical volume manager, think partitions) is very good. You can expand/shrink/add new volumes very easily, which is great. Of course, when messing with your data, <strong>be careful</strong>, <strong>have backups</strong>, or be prepared to irrevocably lose <em>all</em> of your data. With that said, <strong>don&rsquo;t</strong> try to shrink a volume. It <em>probably</em> won&rsquo;t work. This is why I advocate for only allocating how much storage you think you need right now. It&rsquo;s much much much easier to expand a volume into unallocated space than try to finangle your volumes&rsquo; sizes after the fact.</p>
+
+<hr />
+
+<h1 id="3-the-base-packages">3 . The base packages</h1>
+
+<p>After booting into your install and <code>sudo yum upgrade</code> to make sure you have the latest packages, it&rsquo;s time to get fiddling. The first thing to install are basic packages that will let you get started with your server. The base packages I have are: SSH, HP Tools (obviously only if you have a HP server), OpenVPN, and Docker.</p>
+
+<h2 id="3-1-ssh">3.1 SSH</h2>
+
+<p>Before SSH is set up, you&rsquo;ll be connecting straight to the server&rsquo;s I/O. Less than ideal. So, the first thing you&rsquo;ll want to setup is SSH access.<br />
+For the best security, I only have private-public keypair login enabled. In the config I&rsquo;ll set up disabling other login methods.<br />
+The SSH config files are located at <code>/etc/ssh/sshd_config</code> Here&rsquo;s what I have changed:</p>
+
+<pre><code>Port 8754
+</code></pre>
+
+<p>SSH uses port <sup>21</sup>&frasl;<sub>22</sub> by default, and brute-force methods will hammer those ports. Switching to a less-used port will <em>drastically</em> lower the amount of login attempts on your server. To be clear, this is <a href="https://en.wikipedia.org/wiki/Security_through_obscurity">security through obscurity</a> and is equivalent to no security layer at all. Coming sections will go through actual hardening to provide security. This step is just to reduce the logging the server does, and keep Fail2Ban cleaner.</p>
+
+<pre><code>PermitRootLogin no
+</code></pre>
+
+<p>By denying direct login from SSH to the root account, you can prevent brute-force methods that commonly try for the highest privileges right away. The &lsquo;good practice&rsquo; is logging in with your user account and elevating privlege from there as necessary (switching to the root user is not recommended, just <code>sudo</code>)</p>
+
+<pre><code>MaxSessions 2
+</code></pre>
+
+<p>This limits the number of active login sessions allowed. If you&rsquo;re going to be the only person using this server&rsquo;s SSH, 2 (or even 1) should be sufficient. This also protects against DoS brute force attacks.<br />
+-&gt; This does not limit the number of <em>logged in</em> sessions you can have, just simultaneous <em>login</em> attempts. Have as many terminal windows open as you want!</p>
+
+<pre><code>AuthorizedKeysFile .ssh/authorized_keys
+</code></pre>
+
+<p>This is the single file that stores authorized public keys. The directory will be your user account&rsquo;s home dir, in the hidden <code>.ssh/</code> directory. The file may not exist yet, we&rsquo;ll transfer the data to it later.</p>
+
+<pre><code>PasswordAuthentication no
+</code></pre>
+
+<p>Disable the login method of user-password.</p>
+
+<pre><code>ChallengeResponseAuthentication no
+</code></pre>
+
+<p>Disable keyboard-interactive login.</p>
+
+<pre><code>MaxStartups 2:50:5
+</code></pre>
+
+<p>This is also to prevent a flood of login attempts at once. It&rsquo;s actually redundant to use in conjunction with <code>MaxSessions 2</code>, as with that &gt;2 connections will instantly drop. <code>MaxStartups</code> uses a probability of dropping a connection based on the values set above. <code>2:50:5</code> means after <strong>2</strong> unauthenticated connections, any more connections are randomly dropped at a rate of <strong>50</strong>% chance, up to 100% drop at 5 connections (and beyond). It&rsquo;s rather neat and really the only reason I have it here.</p>
+
+<p>And those are the settings I have changed for the ssh config file.<br />
+Restart the ssh daemon with <code>sudo systemctl restart sshd</code>. If the sshd service isn&rsquo;t enabled, <code>sudo systemctl enable sshd</code> then <code>sudo systemctl start sshd</code>.</p>
+
+<h3 id="key-generation">Key Generation</h3>
+
+<p>Next step for SSH is the keygen process. My local computer runs Windows, and I use puTTYgen to create the key pairs. Make sure to use a strong password (I recommend <a href="https://keepass.info/">KeePass</a> to generate/store secrets - it&rsquo;s fantastic!). The <strong>public key</strong> gets transferred to the server&rsquo;s <code>~/.ssh/authorized_keys</code> file. The <strong>private key</strong> gets saved to your computer and is used every time for authentication against the public key.<br />
+It&rsquo;s possible the <code>~/.ssh/</code> directory doesn&rsquo;t exist yet. To create it with the correct permissions:</p>
+
+<pre><code>sudo mkdir -p ~/.ssh
+sudo touch ~/.ssh/authorized_keys
+sudo chmod -R go= ~/.ssh
+</code></pre>
+
+<p>This will set the directory and files in it with the correct permissions.</p>
+
+<h3 id="port-forward">Port forward</h3>
+
+<p>This step is optional if you never plan on accessing your server remotely. It&rsquo;s also more secure and you don&rsquo;t have to worry about outside attacks on your server. A more secure alternative is running an OpenVPN service and connecting to the VPN to connect to the server, but I won&rsquo;t be covering that as I had issues with it.<br />
+Nope, I went with a simple port forward.</p>
+
+<pre><code>sudo firewall-cmd --permanent --zone=public --add-port=9999/tcp
+sudo firewall-cmd --reload
+</code></pre>
+
+<p>Then restart sshd again, and check for connectivity on your local computer! Also, it&rsquo;s easy to check for remote access by trying to login from your phone while on cellular.</p>
+
+<h2 id="3-2-hp-tools">3.2 HP Tools</h2>
+
+<p>This step is exclusive to HP machines. I mainly use this package to monitor temps in the server, as HP servers have a lot (like 30+) temperature sensors. There are a few other commands that this package includes which may be useful for some.<br />
+To get the package, the HP repo will have to be added to yum:<br />
+First, make a yum .repo file in <code>/etc/yum.repos.d/hp.repo</code>, and put this inside:</p>
+
+<pre><code>[HP-spp]
+name=HP Service Pack for ProLiant
+baseurl=http://downloads.linux.hpe.com/SDR/repo/spp/RHEL/7.2/x86_64/current/
+enabled=1
+gpgcheck=0
+gpgkey=file:///etc/pki/rpm-gpg/GPG-KEY-ssp
+[HP-mcp]
+name=HP Management Component Pack for ProLiant
+baseurl=http://downloads.linux.hpe.com/SDR/repo/mcp/centos/7.3/x86_64/current/
+enabled=1
+gpgcheck=0
+gpgkey=file:///etc/pki/rpm-gpg/GPG-KEY-mcp
+</code></pre>
+
+<p>Then add the GPG keys for the repo, which adds verification.<br />
+In <code>/etc/pki/rpm-gpg</code>:</p>
+
+<pre><code>http://downloads.linux.hpe.com/SDR/repo/spp/GPG-KEY-spp
+http://downloads.linux.hpe.com/SDR/repo/spp/GPG-KEY-mcp
+</code></pre>
+
+<p>Now yum will recognize the new repo, and you can install the tools from there with  <code>sudo yum -y install hp-health</code></p>
+
+<p><strong>Usage</strong></p>
+
+<p>The package starts its own subshell with the command <code>sudo hpasmcli</code>. It&rsquo;s possible to skip the subshell by giving a specific desired readout.<br />
+So to get a temperature readout, use<br />
+<code>sudo hpasmcli -s &quot;SHOW TEMP&quot;</code></p>
+
+<hr />
+
+<h1 id="4-security">4 . Security</h1>
+
+<p>This is easily the most important part to get right, and make sure everything works and is secure. Nowadays there are thousands of servers whose sole purpose is to test every password for every port of every IP address that faces the internet. It&rsquo;s not uncommon to see hundreds of requests <em>per hour</em> from servers all across the globe, trying everything imaginable to get a handhold anywhere in a server.<br />
+For this reason it&rsquo;s imperative to take extra steps to minimize the attack area, or parts of the server that <strong>must</strong> face the internet. Yes, this adds additional hassle, but if there&rsquo;s anything you don&rsquo;t want to experience, its having no control over your server and having to wipe it to get it back.<br />
+The biggest measure that can be taken is having an SSH-only connection method, which makes it extremely difficult for unauthorized parties to get access to user accounts or root accounts and send commands. The rest of the security setup is below.</p>
+
+<h2 id="4-1-openvpn">4.1 OpenVPN</h2>
+
+<p>With that in mind, we&rsquo;ll use OpenVPN, and connect to the server through a VPN we set up in order to access its other services. This means only a single service and port will be internet-facing (WAN), and will be secured with a (hopefully) strong password and private-public key cryptography.<br />
+I&rsquo;m going to preface the rest of this section with a disclaimer. I actually struggled mightily with setting up this part, and it took me a lot of effort to fix everything and get it working. However, I hope you&rsquo;re able to simply follow the steps and get going right away. There is also additional configuration required on every machine you want to access the server&rsquo;s VPN, which I will cover a little bit of, including some of the issues I had.</p>
+
+<p>First is installing OpenVPN:</p>
+
+<pre><code>sudo yum install epel-release -y
+sudo yum install -y openvpn wget
+</code></pre>
+
+<p>OpenVPN also requires a cryptography package. We&rsquo;ll use Easy RSA. 2.3.3 is the latest at time of writing, check <a href="https://github.com/OpenVPN/easy-rsa-old/releases">here</a> for the latest ver.</p>
+
+<pre><code>wget -O /tmp/easyrsa https://github.com/OpenVPN/easy-rsa-old/archive/2.3.3.tar.gz
+</code></pre>
+
+<p>Extract the tarfile with <code>tar xzf /tmp/easyrsa</code> and move it to a subdirectory in openvpn, e.g. <code>/etc/openvpn/easy-rsa</code> using <code>sudo cp -rf easy-rsa-old-2.3.3/easy-rsa/2.0/* /etc/openvpn/easy-rsa</code>.<br />
+Lastly, change the owner to yourself (non-root!) with <code>sudo chown &lt;user&gt; /etc/openvpn/easy-rsa</code></p>
+
+<p>On the server, follow the steps from <a href="https://github.com/Nyr/openvpn-install">this repo</a> to create an <code>.ovpn</code> config file. Note that the script does a lot more than just create a config file; it adjusts firewall rules as well, and more. Check to make sure the OpenVPN service is added to the firewall with <code>sudo firewall-cmd --zone=public --list-all</code>. In the services line, you should see openvpn (and possibly other services, we&rsquo;ll get to that).</p>
+
+<p>Once the script has run, most of the server-side work has been done. The keys have been generated, and needs to be copied to client machines in order to connect. A client config <code>.ovpn</code> has also been created and needs to be copied as well. I had a lot of issues getting client machines to connect, and what fixed it in the end was having the <code>client.ovpn</code> file include all the cryptography required, i.e. public keys and certs. Note the <em>private</em> key is included in this file, which makes the file a security risk on the client machine. Make sure to protect it, but there is still a password required which is not included in the file.<br />
+Anyway, I&rsquo;ll include the <code>client.ovpn</code> I have, which has some tweaks which helped fix my issues.</p>
+
+<pre><code>client
+tls-client
+auth SHA512
+tls-auth &lt;*.tlsauth file on client machine, full path&gt; 1
+cipher AES-256-CBC
+remote-cert-eku &quot;TLS Web Client Authentication&quot;
+proto udp
+remote &lt;remote ip of server&gt; &lt;open port&gt; udp
+dev tun
+topology subnet
+pull
+user nobody
+group nobody
+</code></pre>
+
+<p>The rest of the file is certs and keys, of which there are 4 total.</p>
+
+<h2 id="4-2-firewall">4.2 Firewall</h2>
+
+<h3 id="public-zone-wan">Public Zone (WAN)</h3>
+
+<p>By default, CentOS has many services open on the public zone to make it easy for new users to start developing things such as webservers. This is bad for people who want security first. So make sure that the public zone of the firewall, which dictates what services have open internet access, is limited to as few services as possible. In my case, I only have OpenVPN.<br />
+Remove any service with <code>sudo firewall-cmd --zone=public --permanent --remove-service=&lt;name&gt;</code> and similarly any port with <code>sudo firewall-cmd --zone=public --permanent --remove-port=&lt;name&gt;</code>.<br />
+To that end, this is what I get when I run <code>sudo firewall-cmd --zone=public --list-all</code>:</p>
+
+<pre><code>public (active)
+ target: DROP
+ icmp-block-inversion: no
+ interfaces: eno1
+ sources:
+ services: openvpn
+ ports:
+ protocols:
+ masquerade: no
+ forward-ports:
+ source-ports:
+ icmp-blocks:
+ rich rules:
+</code></pre>
+
+<h3 id="internal-zone">Internal Zone</h3>
+
+<p>The internal zone is for intercommunications between services on the local machine, for example a Docker container needing access to a mySQL service running on the machine. Docker-docker interconnects are handled by docker and additional docker configuration and should not be included here.</p>
+
+<h3 id="trusted-zone">Trusted Zone</h3>
+
+<p>The trusted zone allows everything by default, and therefore should be restricted to, well, trusted applications and machines. For example, I have certain computers in the LAN in the trusted zone.</p>
+
+<hr />
+
+<h1 id="5-monitoring-with-grafana">5 . Monitoring with Grafana</h1>
+
+<p>Grafana is always fun to setup and spend time making nice looking dashboards for all sorts of monitoring. It truly is a sandbox for data visualization. There are many different ways to configure grafana, and many different data collection sources that can be used. For this, I&rsquo;ll just use <a href="https://github.com/influxdata/influxdb">InfluxDB</a> for data aggregation, and <a href="https://github.com/influxdata/telegraf">Telegraf</a> for data acquisition.</p>
+
+<h2 id="5-1-installing-grafana">5.1 Installing Grafana</h2>
+
+<p>Grafana also requires an external repo to be added before the yum install. In <code>/etc/yum.repos.d/grafana.repo</code> add:</p>
+
+<pre><code>[grafana]
+name=grafana
+baseurl=https://packages.grafana.com/oss/rpm
+repo_gpgcheck=1
+enabled=1
+gpgcheck=1
+gpgkey=https://packages.grafana.com/gpg.key
+sslverify=1
+sslcacert=/etc/pki/tls/certs/ca-bundle.crt
+</code></pre>
+
+<p>And then install grafana with <code>sudo yum install -y grafana fontconfig freetype</code> (includes font dependencies).<br />
+Adjust grafana settings in <code>/etc/grafana/grafana.ini</code> to your liking.<br />
+Start the Grafana service with <code>sudo systemctl start grafana-server</code> and let it run at boot <code>sudo systemctl enable grafana-server</code>.</p>
+
+<h2 id="5-2-installing-influxdb">5.2 Installing InfluxDB</h2>
+
+<p>Add the InfluxDB repo file in <code>/etc/yum.repos.d/influxdb.repo</code>:</p>
+
+<pre><code>[influxdb]
+name = InfluxDB Repository - RHEL \$releasever
+baseurl = https://repos.influxdata.com/centos/\$releasever/\$basearch/stable
+enabled = 1
+gpgcheck = 1
+gpgkey = https://repos.influxdata.com/influxdb.key
+</code></pre>
+
+<p>Install with <code>sudo yum install influxdb</code> and start &amp; enable the <code>systemctl</code> service.<br />
+With InfluxDB installed, it&rsquo;s necessary to create a database first to store incoming data from Telegraf. Type <code>influx</code> to start a subshell and enter the following:</p>
+
+<pre><code>CREATE DATABASE &quot;MONITORDB&quot;
+SHOW DATABASES
+CREATE USER &quot;admin&quot; WITH PASSWORD &quot;&lt;password&gt;&quot; WITH ALL PRIVILEGES
+CREATE USER &quot;monitor&quot; WITH PASSWORD &quot;&lt;password&gt;&quot;
+GRANT ALL ON &quot;MONITORDB&quot; to &quot;monitor&quot;
+SHOW GRANTS FOR &quot;monitor&quot;
+SHOW USERS
+</code></pre>
+
+<p>The <code>SHOW</code> commands are to verify the previous steps completed successfully.<br />
+In <code>/etc/influxdb/influxdb.conf</code>, make sure <code>auth-enable = true</code> to force password use.</p>
+
+<h2 id="5-3-installing-telegraf">5.3 Installing Telegraf</h2>
+
+<p>Telegraf is included in the influxdb repo, so it can be installed with <code>sudo yum install telegraf</code>.<br />
+Telegraf requires configuration to start data collection, so dive into <code>/etc/telegraf/telegraf.conf</code>:<br />
+Under <em>output plugins</em> uncomment the influxdb output to enable it and add the line <code>urls = [&quot;http://localhost:8086&quot;]</code> and <code>database = &quot;MONITORDB&quot;</code>.<br />
+Add the username/password combination under the <em>HTTP Basic Auth</em> section.<br />
+Lastly, enable any collection plugins you want, e.g. <code>inputs.docker</code> and then start+enable the <code>systemctl</code> service.</p>
+
+<h2 id="using-grafana">Using Grafana</h2>
+
+<p>For the first time accessing grafana in browser, the user/password combination is <code>admin</code> for both. You want to change that right away. Then add InfluxDB as a data source, then go wild with making your dashboards!<br />
+For example, here&rsquo;s one of my dashboards:
+<img src="https://i.imgur.com/eShoche.png" alt="An example Grafana dashboard" /></p>
+
+<hr />
+
+<h1 id="6-docker-setup">6 . Docker Setup</h1>
+
+<p>With essentially everything setup, now it&rsquo;s possible to start installing services for the server to run. I use Docker to run my services. Let&rsquo;s install it real quick:</p>
+
+<pre><code>yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+sudo yum install docker-ce
+</code></pre>
+
+<p>Run this command so the <code>sudo</code> prefix isn&rsquo;t necessary for every docker command: <code>sudo usermod -aG docker $(whoami)</code> (requires relog).<br />
+The start+enable the <code>docker.service</code></p>
+
+<hr />
+
+<p>So that&rsquo;s about it for my journey in setting up a server, and writing down the steps I took during the process. This server is of course a development project, so everything is changing all the time. The current big project I&rsquo;d like to get running is multiple VMs running on the server, with a VM manager for easier management. There may be a future post about it, or maybe about something else.</p>
+</div><div class="section bottom-menu"><hr/><p><a href="/posts">back</a>
+ &#183;
+
+
+
+<a href="/about">about</a>
+
+
+&#183; <a href="/posts">writing</a>
+&#183; <a href="/projects">projects</a>
+
+</p></div><div class="section footer"><p><a href="/resume.pdf">Resume</a> 
+&#183; <a href="https://github.com/zpar-ky">GitHub</a> 
+&#183; <a href="https://www.linkedin.com/in/andrew-novak/">LinkedIn</a> 
+&#183; <a href="https://portfolium.com/Andrew-Novak">Portfolium</a></p></div></div></body>
