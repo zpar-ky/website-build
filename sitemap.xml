@@ -1,73 +1,45 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
-  
   <url>
     <loc>https://zpar.ky/</loc>
     <lastmod>2020-06-07T13:00:00-05:00</lastmod>
-  </url>
-  
-  <url>
+  </url><url>
     <loc>https://zpar.ky/tags/scripting/</loc>
     <lastmod>2020-06-07T13:00:00-05:00</lastmod>
-  </url>
-  
-  <url>
+  </url><url>
     <loc>https://zpar.ky/posts/setting_up_a_server/</loc>
     <lastmod>2020-06-07T13:00:00-05:00</lastmod>
-  </url>
-  
-  <url>
+  </url><url>
     <loc>https://zpar.ky/tags/</loc>
     <lastmod>2020-06-07T13:00:00-05:00</lastmod>
-  </url>
-  
-  <url>
+  </url><url>
     <loc>https://zpar.ky/posts/how_i_automate_my_media_needs/</loc>
     <lastmod>2019-06-27T12:49:22-05:00</lastmod>
-  </url>
-  
-  <url>
+  </url><url>
     <loc>https://zpar.ky/tags/media/</loc>
     <lastmod>2019-06-27T12:49:22-05:00</lastmod>
-  </url>
-  
-  <url>
+  </url><url>
     <loc>https://zpar.ky/tags/archiving/</loc>
     <lastmod>2018-07-20T12:15:50-04:00</lastmod>
-  </url>
-  
-  <url>
+  </url><url>
     <loc>https://zpar.ky/tags/guide/</loc>
     <lastmod>2018-07-20T12:15:50-04:00</lastmod>
-  </url>
-  
-  <url>
+  </url><url>
     <loc>https://zpar.ky/posts/how_to_automatically_archive_twitch_streams/</loc>
     <lastmod>2018-07-20T12:15:50-04:00</lastmod>
-  </url>
-  
-  <url>
+  </url><url>
     <loc>https://zpar.ky/tags/powershell/</loc>
     <lastmod>2018-07-20T12:15:50-04:00</lastmod>
-  </url>
-  
-  <url>
+  </url><url>
     <loc>https://zpar.ky/projects/</loc>
     <lastmod>2018-07-16T22:17:19-04:00</lastmod>
-  </url>
-  
-  <url>
+  </url><url>
     <loc>https://zpar.ky/posts/</loc>
     <lastmod>2018-07-16T12:00:00+00:00</lastmod>
-  </url>
-  
-  <url>
+  </url><url>
     <loc>https://zpar.ky/about/</loc>
-  </url>
-  
-  <url>
+  </url><url>
     <loc>https://zpar.ky/categories/</loc>
   </url>
-  
 </urlset>

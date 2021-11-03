@@ -122,10 +122,10 @@ Again, change these settings as you want your media to be organized.</p>
 <p>This is the fun part. In this section, I&rsquo;ll cover the scripts I use to automatically do tasks. One of the most useful ones I use is the Deluge watcher.</p>
 <h2 id="41-deluge-watcher">4.1 Deluge Watcher</h2>
 <p>The deluge daemon has CLI commands that can be run to query the status of Deluge. It also has the ability to modify torrents, such as adding and removing them. Instead of just posting my script, I&rsquo;m going to go through the individual commands and explain them.\</p>
-<div class="highlight"><pre style="color:#fff;background-color:#111;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">deluge-console -c /home/vpn/.config/deluge info -s Downloading | gawk <span style="color:#0086d2">&#39;/ID/,/Error/&#39;</span> | grep -C <span style="color:#0086f7;font-weight:bold">5</span> <span style="color:#0086d2">&#34;Seeds: 0&#34;</span> | grep -B <span style="color:#0086f7;font-weight:bold">4</span> <span style="color:#0086d2">&#34;Active: [1-9] days&#34;</span> | grep <span style="color:#0086d2">&#34;ID&#34;</span> | sed <span style="color:#0086d2">&#39;s/^....//&#39;</span> &gt; downloadIds.txt
+<div class="highlight"><pre tabindex="0" style="color:#fff;background-color:#111;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">deluge-console -c /home/vpn/.config/deluge info -s Downloading | gawk <span style="color:#0086d2">&#39;/ID/,/Error/&#39;</span> | grep -C <span style="color:#0086f7;font-weight:bold">5</span> <span style="color:#0086d2">&#34;Seeds: 0&#34;</span> | grep -B <span style="color:#0086f7;font-weight:bold">4</span> <span style="color:#0086d2">&#34;Active: [1-9] days&#34;</span> | grep <span style="color:#0086d2">&#34;ID&#34;</span> | sed <span style="color:#0086d2">&#39;s/^....//&#39;</span> &gt; downloadIds.txt
 </code></pre></div><p>This is a meaty single-liner that probably shouldn&rsquo;t exist.<br>
 The logic behind this command is simple: find torrents that are inactive and unlikely to download anything. Let&rsquo;s take a look at what <code>deluge-console info -s Downloading</code> gives us, and narrow it down from there.</p>
-<div class="highlight"><pre style="color:#fff;background-color:#111;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ deluge-console -c /home/vpn/.config/deluge info -s Downloading
+<div class="highlight"><pre tabindex="0" style="color:#fff;background-color:#111;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ deluge-console -c /home/vpn/.config/deluge info -s Downloading
 &gt; Name: &lt;The torrent&#39;s name&gt;
 &gt; ID: a196f656c05e241f34159c712cb21edd34c7fa27
 &gt; State: Downloading Down Speed: 0.0 KiB/s Up Speed: 0.0 KiB/s
@@ -135,17 +135,17 @@ The logic behind this command is simple: find torrents that are inactive and unl
 &gt; Tracker status: indexer.com: Error: Operation canceled
 &gt; Progress: 0.00% [~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~]
 </code></pre></div><p>Deluge uses a torrent&rsquo;s <em>ID</em> to identify it. That&rsquo;s what we use to do stuff to it, such as removing it from the queue. So now that we know the output, I&rsquo;ll go through each piped command that narrows it down.</p>
-<div class="highlight"><pre style="color:#fff;background-color:#111;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">gawk <span style="color:#0086d2">&#39;/ID/,/Error/&#39;</span>
+<div class="highlight"><pre tabindex="0" style="color:#fff;background-color:#111;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">gawk <span style="color:#0086d2">&#39;/ID/,/Error/&#39;</span>
 </code></pre></div><p>Find the word <em>ID</em>, and select that <strong>line</strong> and following lines up to the word <em>Error</em>. If a torrent doesn&rsquo;t have an error, it won&rsquo;t be matched. Pipe the results.</p>
-<div class="highlight"><pre style="color:#fff;background-color:#111;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">grep -C <span style="color:#0086f7;font-weight:bold">5</span> <span style="color:#0086d2">&#34;Seeds: 0&#34;</span>
+<div class="highlight"><pre tabindex="0" style="color:#fff;background-color:#111;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">grep -C <span style="color:#0086f7;font-weight:bold">5</span> <span style="color:#0086d2">&#34;Seeds: 0&#34;</span>
 </code></pre></div><p>Search for the word &ldquo;Seeds: 0&rdquo;, and give <em>5</em> lines of <strong>C</strong>ontext around the matched word&rsquo;s line. This returns the lines from <code>ID:</code> to <code>Tracker status:</code>. This selects only torrents with status <code>error</code> and <code>seeds = 0</code>, because sometimes a torrent with <code>error</code> status will still be able to complete a torrent. Pipe the results.</p>
-<div class="highlight"><pre style="color:#fff;background-color:#111;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">grep -B <span style="color:#0086f7;font-weight:bold">4</span> <span style="color:#0086d2">&#34;Active: [1-9] days&#34;</span>
+<div class="highlight"><pre tabindex="0" style="color:#fff;background-color:#111;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">grep -B <span style="color:#0086f7;font-weight:bold">4</span> <span style="color:#0086d2">&#34;Active: [1-9] days&#34;</span>
 </code></pre></div><p>Search for the word <code>Active: [1-9] days</code>. The <code>[1-9]</code> is a <a href="https://gist.github.com/vitorbritto/9ff58ef998100b8f19a0#groups-and-ranges">regex</a> that will match any digit from 1-9, inclusive. This means that, now, torrents with <code>error</code> status, no seeders, and over 1 day in the queue will be matched. That&rsquo;s all I want, and it has served me perfectly. Pipe the results.</p>
-<div class="highlight"><pre style="color:#fff;background-color:#111;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">grep <span style="color:#0086d2">&#34;ID&#34;</span>
+<div class="highlight"><pre tabindex="0" style="color:#fff;background-color:#111;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">grep <span style="color:#0086d2">&#34;ID&#34;</span>
 </code></pre></div><p>Take the ID from each torrent that fits the criteria above, and pipe them to:</p>
-<div class="highlight"><pre style="color:#fff;background-color:#111;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">sed <span style="color:#0086d2">&#39;s/^....//&#39;</span> &gt; downloadIds.txt
+<div class="highlight"><pre tabindex="0" style="color:#fff;background-color:#111;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">sed <span style="color:#0086d2">&#39;s/^....//&#39;</span> &gt; downloadIds.txt
 </code></pre></div><p>This is the most arcane-looking command. Breaking it down shows how simple it is:\</p>
-<pre><code>s/^....//
+<pre tabindex="0"><code>s/^....//
 s          indicate this is a **s**earch function
  /         indicates that the following is the search context
   ^        select from the start of the line
@@ -155,7 +155,7 @@ s          indicate this is a **s**earch function
 </code></pre><p>I mostly just wanted to do the staggered breakdown like <a href="https://codegolf.stackexchange.com/a/103632">codegolfers do</a> for this section :)</p>
 <p>Anyway, in the end, the IDs of Deluge torrents that are unlikely to download anything are added to a file named <em>downloadIds.txt</em>.<br>
 Maybe <em>downloadIds.txt</em> is empty, as no torrents with errors? Check that with this:</p>
-<div class="highlight"><pre style="color:#fff;background-color:#111;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#fb660a;font-weight:bold">if</span> [ ! -s downloadIds.txt ]
+<div class="highlight"><pre tabindex="0" style="color:#fff;background-color:#111;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#fb660a;font-weight:bold">if</span> [ ! -s downloadIds.txt ]
 <span style="color:#fb660a;font-weight:bold">then</span>
   echo <span style="color:#0086d2">&#34;downloadIds.txt is empty, nothing to do&#34;</span>
   rm downloadIds.txt 2&gt; /dev/null
@@ -163,33 +163,33 @@ Maybe <em>downloadIds.txt</em> is empty, as no torrents with errors? Check that 
 <span style="color:#fb660a;font-weight:bold">fi</span>
 </code></pre></div><p>If you find that <code>rm</code> doesn&rsquo;t work, toss a <code>-f</code> flag to show just how much you mean it.</p>
 <p>Sonarr can operate on Deluge ID&rsquo;s, but they have to be uppercase for some reason:</p>
-<div class="highlight"><pre style="color:#fff;background-color:#111;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">tr a-z A-Z &lt; downloadIds.txt &gt; downloadIdsTEMP.txt
+<div class="highlight"><pre tabindex="0" style="color:#fff;background-color:#111;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">tr a-z A-Z &lt; downloadIds.txt &gt; downloadIdsTEMP.txt
 rm downloadIds.txt
 mv downloadIdsTEMP.txt downloadIds.txt
 </code></pre></div><p><code>tr</code>, short for <strong>tr</strong>anslate, takes (<code>&lt;</code>) the downloadIds.txt in as input, turns a-z characters uppercase A-Z, then outputs to a new file <em>downloadIdsTEMP.txt</em>, because the input is read line-by-line, and you don&rsquo;t want to cross the input/output streams!</p>
 <p>Next, get the queue that Sonarr has with a cURL request (have your IP and API key at the ready)</p>
-<div class="highlight"><pre style="color:#fff;background-color:#111;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">curl -s -X GET -G <span style="color:#0086d2">&#34;</span><span style="color:#fb660a">$IP</span><span style="color:#0086d2">/api/queue/&#34;</span> -d <span style="color:#fb660a">apikey</span>=<span style="color:#fb660a">$APIKEY</span> &gt;&gt; json.txt
+<div class="highlight"><pre tabindex="0" style="color:#fff;background-color:#111;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">curl -s -X GET -G <span style="color:#0086d2">&#34;</span><span style="color:#fb660a">$IP</span><span style="color:#0086d2">/api/queue/&#34;</span> -d <span style="color:#fb660a">apikey</span>=<span style="color:#fb660a">$APIKEY</span> &gt;&gt; json.txt
 </code></pre></div><p><code>-s</code> for a <strong>s</strong>ilent request (no console output), <code>-X</code> specifies a request type, and is tied to <code>-G</code> for <strong>g</strong>et. <code>-d</code> sends additional <strong>d</strong>ata with the request, and Sonarr requires the API key for authentication. The whole <em>JSON</em> request then gets piped into <em>json.txt</em>*.</p>
 <p>Next, we use the <em>Deluge</em> IDs to match them with their respective <em>Sonarr</em> IDs.</p>
-<div class="highlight"><pre style="color:#fff;background-color:#111;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#fb660a;font-weight:bold">while</span> read downloadId; <span style="color:#fb660a;font-weight:bold">do</span>
+<div class="highlight"><pre tabindex="0" style="color:#fff;background-color:#111;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#fb660a;font-weight:bold">while</span> read downloadId; <span style="color:#fb660a;font-weight:bold">do</span>
  awk -v <span style="color:#fb660a">id</span>=<span style="color:#0086d2">&#34;</span><span style="color:#fb660a">$downloadId</span><span style="color:#0086d2">&#34;</span> <span style="color:#0086d2">&#39;$0 ~ id { getline; getline; print }&#39;</span> json.txt | sed <span style="color:#0086d2">&#39;s/^..........//&#39;</span> &gt;&gt; sonarrIds.txt
 <span style="color:#fb660a;font-weight:bold">done</span> &lt; downloadIds.txt
 </code></pre></div><p>I&rsquo;m gonna be honest, I forget what this exactly does, except I remember being annoyed by setting variables inside <code>awk</code>. The <code>-v</code> flag sets a variable, which is used inside the <code>awk</code> &ldquo;function&rdquo;. The function searches for the given ID, then prints two lines after it for <code>sed</code> to deal with.<br>
 The <code>sed</code> command is the same as the one from before, but this time with more periods to match more unneeded characters in front of the sonarr ID.</p>
 <p>Lastly, we take the Sonarr IDs we care about and tell Sonarr to delete them from its queue. Sonarr will also delete it from Deluge, making it pretty convenient for us, right? Easy? Right?</p>
-<div class="highlight"><pre style="color:#fff;background-color:#111;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#fb660a;font-weight:bold">while</span> read ID; <span style="color:#fb660a;font-weight:bold">do</span>
+<div class="highlight"><pre tabindex="0" style="color:#fff;background-color:#111;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#fb660a;font-weight:bold">while</span> read ID; <span style="color:#fb660a;font-weight:bold">do</span>
  curl -s -X DELETE -G <span style="color:#0086d2">&#34;</span><span style="color:#fb660a">$IP</span><span style="color:#0086d2">/api/queue/</span><span style="color:#fb660a">$ID</span><span style="color:#0086d2">&#34;</span> -d <span style="color:#fb660a">blacklist</span>=true -d <span style="color:#fb660a">apikey</span>=<span style="color:#fb660a">$APIKEY</span>
  sleep <span style="color:#0086f7;font-weight:bold">1</span> <span style="color:#080;background-color:#0f140f;font-style:italic"># just to be safe</span>
 <span style="color:#fb660a;font-weight:bold">done</span> &lt; sonarrIDs.txt
 </code></pre></div><p>Similar to the previous cURL, but instead of a <code>GET</code> request we&rsquo;re asking for Sonarr to <code>DELETE</code> something.</p>
-<div class="highlight"><pre style="color:#fff;background-color:#111;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">rm downloadIds.txt 2&gt; /dev/null
+<div class="highlight"><pre tabindex="0" style="color:#fff;background-color:#111;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">rm downloadIds.txt 2&gt; /dev/null
 rm sonarrIds.txt 2&gt; /dev/null
 rm json.txt 2&gt; /dev/null
 </code></pre></div><p>I lied about the <em>lastly</em> part earlier. But now this script is done for real. Congrats! If you made it this far, I&rsquo;m sorry!</p>
 <h2 id="42-watchdogs">4.2 Watchdogs</h2>
 <p>First and foremost, I <em>highly</em> recommend not following anything in this section (or the rest of this page, I guess). I use <code>screen</code> for all my services, which is definitely not a good way to do it. Look up how to run processes with something like <code>systemctl</code>, which is installed by default on most/all Linux systems. It&rsquo;s much more robust and reliable.</p>
 <p>I have a <code>watchdog.sh</code> script that periodically (through <code>cron</code>) checks whether all my processes are running in <code>screen</code>. Here is one block for <em>rclone</em>:</p>
-<div class="highlight"><pre style="color:#fff;background-color:#111;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#fb660a">GREP</span>=<span style="color:#0086d2">&#34;/bin/grep&#34;</span>
+<div class="highlight"><pre tabindex="0" style="color:#fff;background-color:#111;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#fb660a">GREP</span>=<span style="color:#0086d2">&#34;/bin/grep&#34;</span>
 <span style="color:#fb660a">SCREEN</span>=<span style="color:#0086d2">&#34;/usr/bin/screen&#34;</span>
 <span style="color:#fb660a;font-weight:bold">if</span> ! <span style="color:#fb660a">$SCREEN</span> -ls | <span style="color:#fb660a">$GREP</span> -q <span style="color:#0086d2">&#34;mount&#34;</span> ; <span style="color:#fb660a;font-weight:bold">then</span>
  <span style="color:#fb660a">$SCREEN</span> -dmS mount bash -c <span style="color:#0086d2">&#39;rclone mount drive: /mnt/drive --vfs-cache-mode off -v --retries 5 --retries-sleep=5s&#39;</span>
