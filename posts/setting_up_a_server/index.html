@@ -48,7 +48,7 @@
 <h1 id="0--introduction">0 . Introduction</h1>
 <p>The goal of this post will be to go from a blank server to a server running Docker for software <em>containerization</em>, as well other software for more advanced usage like VMs.<br>
 For some background, I&rsquo;d like to say that I&rsquo;ve been following the homelab community for quite some time. And I spent a lot of hands-on time with enterprise server hardware while working at FPN. I was constantly checking <a href="https://www.labgopher.com/">LabGopher</a> for listings on eBay for servers, in the hopes of snagging a good deal on some quality hardware. After a little while, I found a <em>really</em> good deal on a HP Proliant DL380p G8. It was wiped clean and had everything I needed to get up and running.<br>
-Since I feel like this definitely a niche topic for more advanced Linux users, I&rsquo;m going to make several assumptions about readers' skill level. Nothing I&rsquo;m going to be doing is very complex or arcane, and I&rsquo;ll try my best to explain what&rsquo;s happening. But I will assume that you have a good understanding of general Linux, such as:</p>
+Since I feel like this definitely a niche topic for more advanced Linux users, I&rsquo;m going to make several assumptions about readers&rsquo; skill level. Nothing I&rsquo;m going to be doing is very complex or arcane, and I&rsquo;ll try my best to explain what&rsquo;s happening. But I will assume that you have a good understanding of general Linux, such as:</p>
 <ul>
 <li>most default commands (<code>sudo</code>, <code>grep</code>, etc)</li>
 <li>the file structure of Linux</li>
@@ -71,7 +71,7 @@ Once you have your filesystem all setup with a nice, clean, redundant blank slat
 <h1 id="2--installing-the-os-centos-7">2 . Installing the OS (CentOS 7)</h1>
 <p>This section is another step that is well-guided by easy to follow installation GUIs. There isn&rsquo;t much that isn&rsquo;t clear in the visual installer, so I believe in you to do the right thing.<br>
 However, there is one thing I really want to emphasize, and that is volume allocation. <em>Please</em> only allocate what you need right now, <strong>not</strong> all of your space (unless you don&rsquo;t have a whole lot to begin with. I&rsquo;m talking &lt;1TB). Here&rsquo;s why:<br>
-I have 36TB of raw storage. I&rsquo;ve currently allocated 3TB in CentOS. I know I won&rsquo;t be going through that much data too quickly, so I didn&rsquo;t allocate all my storage space right away. CentOS&rsquo;s LVM (logical volume manager, think partitions) is very good. You can expand/shrink/add new volumes very easily, which is great. Of course, when messing with your data, <strong>be careful</strong>, <strong>have backups</strong>, or be prepared to irrevocably lose <em>all</em> of your data. With that said, <strong>don&rsquo;t</strong> try to shrink a volume. It <em>probably</em> won&rsquo;t work. This is why I advocate for only allocating how much storage you think you need right now. It&rsquo;s much much much easier to expand a volume into unallocated space than try to finangle your volumes' sizes after the fact.</p>
+I have 36TB of raw storage. I&rsquo;ve currently allocated 3TB in CentOS. I know I won&rsquo;t be going through that much data too quickly, so I didn&rsquo;t allocate all my storage space right away. CentOS&rsquo;s LVM (logical volume manager, think partitions) is very good. You can expand/shrink/add new volumes very easily, which is great. Of course, when messing with your data, <strong>be careful</strong>, <strong>have backups</strong>, or be prepared to irrevocably lose <em>all</em> of your data. With that said, <strong>don&rsquo;t</strong> try to shrink a volume. It <em>probably</em> won&rsquo;t work. This is why I advocate for only allocating how much storage you think you need right now. It&rsquo;s much much much easier to expand a volume into unallocated space than try to finangle your volumes&rsquo; sizes after the fact.</p>
 <hr>
 <h1 id="3--the-base-packages">3 . The base packages</h1>
 <p>After booting into your install and <code>sudo yum upgrade</code> to make sure you have the latest packages, it&rsquo;s time to get fiddling. The first thing to install are basic packages that will let you get started with your server. The base packages I have are: SSH, HP Tools (obviously only if you have a HP server), OpenVPN, and Docker.</p>
@@ -157,7 +157,7 @@ tls-client
 auth SHA512
 tls-auth &lt;*.tlsauth file on client machine, full path&gt; 1
 cipher AES-256-CBC
-remote-cert-eku &quot;TLS Web Client Authentication&quot;
+remote-cert-eku &#34;TLS Web Client Authentication&#34;
 proto udp
 remote &lt;remote ip of server&gt; &lt;open port&gt; udp
 dev tun
@@ -215,12 +215,12 @@ gpgcheck = 1
 gpgkey = https://repos.influxdata.com/influxdb.key
 </code></pre><p>Install with <code>sudo yum install influxdb</code> and start &amp; enable the <code>systemctl</code> service.<br>
 With InfluxDB installed, it&rsquo;s necessary to create a database first to store incoming data from Telegraf. Type <code>influx</code> to start a subshell and enter the following:</p>
-<pre tabindex="0"><code>CREATE DATABASE &quot;MONITORDB&quot;
+<pre tabindex="0"><code>CREATE DATABASE &#34;MONITORDB&#34;
 SHOW DATABASES
-CREATE USER &quot;admin&quot; WITH PASSWORD &quot;&lt;password&gt;&quot; WITH ALL PRIVILEGES
-CREATE USER &quot;monitor&quot; WITH PASSWORD &quot;&lt;password&gt;&quot;
-GRANT ALL ON &quot;MONITORDB&quot; to &quot;monitor&quot;
-SHOW GRANTS FOR &quot;monitor&quot;
+CREATE USER &#34;admin&#34; WITH PASSWORD &#34;&lt;password&gt;&#34; WITH ALL PRIVILEGES
+CREATE USER &#34;monitor&#34; WITH PASSWORD &#34;&lt;password&gt;&#34;
+GRANT ALL ON &#34;MONITORDB&#34; to &#34;monitor&#34;
+SHOW GRANTS FOR &#34;monitor&#34;
 SHOW USERS
 </code></pre><p>The <code>SHOW</code> commands are to verify the previous steps completed successfully.<br>
 In <code>/etc/influxdb/influxdb.conf</code>, make sure <code>auth-enable = true</code> to force password use.</p>
