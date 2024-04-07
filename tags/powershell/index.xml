@@ -1,21 +1,19 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>powershell on I&#39;m Andrew!</title>
+    <title>Powershell on I&#39;m Andrew!</title>
     <link>https://zpar.ky/tags/powershell/</link>
-    <description>Recent content in powershell on I&#39;m Andrew!</description>
+    <description>Recent content in Powershell on I&#39;m Andrew!</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Fri, 20 Jul 2018 12:15:50 -0400</lastBuildDate><atom:link href="https://zpar.ky/tags/powershell/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Fri, 20 Jul 2018 12:15:50 -0400</lastBuildDate>
+    <atom:link href="https://zpar.ky/tags/powershell/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>How to Automatically Archive Twitch Streams - The Hard Way</title>
       <link>https://zpar.ky/posts/how_to_automatically_archive_twitch_streams/</link>
       <pubDate>Fri, 20 Jul 2018 12:15:50 -0400</pubDate>
-      
       <guid>https://zpar.ky/posts/how_to_automatically_archive_twitch_streams/</guid>
-      <description>If you&amp;rsquo;re like me, simply downloading Twitch VODs aren&amp;rsquo;t good enough. The major one for me is that VODs will have copyrighted content muted, so if the stream has a copyrighted song playing, an entire 5+ minute chunk of the video will be muted. You can get around this by streaming the stream to a local file with streamlink.
-Pretty simple, until you want it to not be. Let&amp;rsquo;s make it difficult, with powershell scripting, timed scripts, and error handling!</description>
+      <description>If you&amp;rsquo;re like me, simply downloading Twitch VODs aren&amp;rsquo;t good enough. The major one for me is that VODs will have copyrighted content muted, so if the stream has a copyrighted song playing, an entire 5+ minute chunk of the video will be muted. You can get around this by streaming the stream to a local file with streamlink.&#xA;Pretty simple, until you want it to not be. Let&amp;rsquo;s make it difficult, with powershell scripting, timed scripts, and error handling!</description>
     </item>
-    
   </channel>
 </rss>
