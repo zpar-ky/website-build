@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>I&#39;m Andrew!</title>
+    <title>I&#39;m Seren!</title>
     <link>https://zpar.ky/</link>
-    <description>Recent content on I&#39;m Andrew!</description>
+    <description>Recent content on I&#39;m Seren!</description>
     <generator>Hugo</generator>
     <language>en-us</language>
     <lastBuildDate>Tue, 10 Jan 2023 22:17:19 -0400</lastBuildDate>
@@ -41,7 +41,7 @@
       <link>https://zpar.ky/about/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://zpar.ky/about/</guid>
-      <description>Hello! My name is Andrew Novak. I recently graduated from Purdue University with a B.S. in Computer Engineering. My areas of interest are semiconductor engineering, cryptography, server hardware, and keyboards.</description>
+      <description>Hello! My name is Seren Novak. I recently graduated from Purdue University with a B.S. in Computer Engineering. My areas of interest are semiconductor engineering, cryptography, server hardware, and keyboards.</description>
     </item>
   </channel>
 </rss>
